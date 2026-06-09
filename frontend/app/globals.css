@@ -1,0 +1,223 @@
+@import "tailwindcss";
+@plugin "daisyui";
+
+/* ═══════════════════════════════════════════════
+   TAILWIND v4 CUSTOM THEME VARIABLES
+═══════════════════════════════════════════════ */
+@theme {
+  --font-nunito: var(--font-nunito), sans-serif;
+  --font-dm-sans: var(--font-dm-sans), sans-serif;
+  --font-arabic: 'Noto Kufi Arabic', sans-serif;
+}
+
+@plugin "daisyui/theme" {
+  name: "godfather";
+  default: false;
+  color-scheme: "dark";
+  --color-base-100: #0A0A0A;
+  --color-base-200: #111111;
+  --color-base-300: #1A1A1A;
+  --color-base-content: #F5F5F5;
+  --color-primary: #8B0000;
+  --color-primary-content: #ffffff;
+  --color-secondary: #2A2A2A;
+  --color-accent: #FF4500;
+}
+
+@plugin "daisyui/theme" {
+  name: "light";
+  default: true;
+  color-scheme: "light";
+  --color-base-100: #ffffff;
+  --color-base-200: #F4F9FA;
+  --color-base-300: #E2E8F0;
+  --color-base-content: #1A1A2E;
+  --color-primary: #3DBDB3;
+  --color-primary-content: #ffffff;
+  --color-secondary: #1E2A38;
+  --color-accent: #2DA89E;
+}
+
+@plugin "daisyui/theme" {
+  name: "matrix";
+  color-scheme: "dark";
+  --color-base-100: #000000;
+  --color-base-200: #050F05;
+  --color-base-300: #0A0F0A;
+  --color-base-content: #00FF41;
+  --color-primary: #00FF41;
+  --color-primary-content: #000000;
+  --color-secondary: #008F11;
+  --color-accent: #003B00;
+}
+
+@plugin "daisyui/theme" {
+  name: "oceanic";
+  color-scheme: "dark";
+  --color-base-100: #0B1626;
+  --color-base-200: #0F1E35;
+  --color-base-300: #142747;
+  --color-base-content: #E0F2FE;
+  --color-primary: #00B4D8;
+  --color-primary-content: #0B1626;
+  --color-secondary: #0077B6;
+  --color-accent: #03045E;
+}
+
+@plugin "daisyui/theme" {
+  name: "caramellatte";
+  color-scheme: "light";
+  --color-base-100: #FDFBF7;
+  --color-base-200: #F5ECE1;
+  --color-base-300: #EADAC2;
+  --color-base-content: #4A3525;
+  --color-primary: #C68B59;
+  --color-primary-content: #ffffff;
+  --color-secondary: #8D5B4C;
+  --color-accent: #D2A884;
+}
+
+@plugin "daisyui/theme" {
+  name: "abyss";
+  color-scheme: "dark";
+  --color-base-100: #050B14;
+  --color-base-200: #08101E;
+  --color-base-300: #0C182B;
+  --color-base-content: #C3D5EB;
+  --color-primary: #00E5FF;
+  --color-primary-content: #050B14;
+  --color-secondary: #2979FF;
+  --color-accent: #7C4DFF;
+}
+
+@plugin "daisyui/theme" {
+  name: "silk";
+  color-scheme: "light";
+  --color-base-100: #FCF6F5;
+  --color-base-200: #F5E8E8;
+  --color-base-300: #EAD5D5;
+  --color-base-content: #4A2E35;
+  --color-primary: #D88A8A;
+  --color-primary-content: #ffffff;
+  --color-secondary: #9E6F7C;
+  --color-accent: #EFA8B8;
+}
+
+
+/* ═══════════════════════════════════════════════
+   PREMIUM CUSTOM CLASSES
+═══════════════════════════════════════════════ */
+@layer components {
+  .btn-premium {
+    @apply bg-gradient-to-r from-primary to-accent text-primary-content hover:opacity-90 transition-all shadow-md font-bold border-none;
+  }
+
+  .card-premium {
+    @apply bg-base-100/80 rounded-3xl border border-base-300 shadow-[0_4px_20px_#0000000d] hover:-translate-y-1 transition-transform duration-200 backdrop-blur-xl;
+  }
+
+  .input-premium {
+    @apply bg-transparent flex-1 px-4 py-2 focus:outline-none placeholder:text-base-content/50 font-semibold border border-base-300 rounded-2xl focus:border-primary transition-colors;
+  }
+}
+
+/* ═══════════════════════════════════════════════
+   BASE STYLES
+═══════════════════════════════════════════════ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: var(--font-dm-sans, sans-serif);
+  transition: background-color 0.3s ease, color 0.3s ease;
+  -webkit-font-smoothing: antialiased;
+}
+
+.navbar-sticky {
+  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              backdrop-filter 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: background-color, border-color, box-shadow, backdrop-filter;
+}
+
+/* Arabic / RTL font override */
+[dir="rtl"] body,
+[dir="rtl"] * {
+  font-family: var(--font-arabic, 'Noto Kufi Arabic'), var(--font-dm-sans, sans-serif) !important;
+  letter-spacing: 0;
+}
+
+/* ═══════════════════════════════════════════════
+   RTL LAYOUT OVERRIDES
+═══════════════════════════════════════════════ */
+[dir="rtl"] .rtl-flip {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .sidebar {
+  right: 0;
+  left: auto;
+}
+
+[dir="rtl"] .mobile-drawer {
+  transform-origin: right center;
+}
+
+[dir="rtl"] .text-start {
+  text-align: right;
+}
+
+[dir="rtl"] .text-end {
+  text-align: left;
+}
+
+[dir="rtl"] .ms-auto {
+  margin-right: auto;
+  margin-left: unset;
+}
+
+[dir="rtl"] .me-auto {
+  margin-left: auto;
+  margin-right: unset;
+}
+
+[dir="rtl"] .ps-6 {
+  padding-right: 1.5rem;
+  padding-left: unset;
+}
+
+[dir="rtl"] .border-s {
+  border-right-width: 1px;
+  border-left-width: 0;
+}
+
+/* ═══════════════════════════════════════════════
+   SCROLLBAR STYLING
+═══════════════════════════════════════════════ */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-base-100);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-base-300);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+}

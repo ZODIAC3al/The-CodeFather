@@ -1,0 +1,44 @@
+# Node dependencies
+node_modules/
+**/node_modules/
+
+# Production build outputs
+dist/
+**/dist/
+.next/
+**/.next/
+build/
+**/build/
+out/
+**/out/
+
+# Environment configurations
+.env
+*.env
+.env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+**/.env
+**/*.env
+**/.env.*
+
+# Local data & uploads
+backend/uploads/
+**/uploads/
+logs/
+*.log
+
+# IDE files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS files
+.DS_Store
+Thumbs.db
