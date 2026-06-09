@@ -1,8 +1,17 @@
-import { Controller, Post, Body, UseGuards, Request, Headers } from '@nestjs/common';
-import { PaymentsService } from './payments.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import {
+  Body,
+  Controller,
+  Headers,
+  Post,
+  Req,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiTags } from '@nestjs/swagger';
+
 import { Public } from '../../common/decorators/public.decorator';
-import { ApiTags, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { PaymentsService } from './payments.service';
 
 @ApiTags('payments')
 @Controller('payments')
@@ -12,19 +21,28 @@ export class PaymentsController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Post('checkout')
-  @ApiBody({ schema: { type: 'object', properties: { courseId: { type: 'string' } } } })
-  createCheckoutSession(@Body('courseId') courseId: string, @Request() req: any) {
+  @ApiBody({
+    schema: { type: 'object', properties: { courseId: { type: 'string' } } },
+  })
+  createCheckoutSession(
+    @Body('courseId') courseId: string,
+    @Request() req: any,
+  ) {
     return this.paymentsService.createCheckoutSession(req.user.sub, courseId);
   }
 
   @Public()
   @Post('webhook')
   handleWebhook(
+    @Req() req: any,
     @Body() payload: any,
     @Headers('stripe-signature') sig: string,
   ) {
-    // If webhook is raw buffer, parse inside NestJS custom middleware or raw controller
-    const buffer = Buffer.isBuffer(payload) ? payload : Buffer.from(JSON.stringify(payload));
-    return this.paymentsService.handleWebhook(buffer, sig);
+    const rawBody =
+      req.rawBody ??
+      (Buffer.isBuffer(payload)
+        ? payload
+        : Buffer.from(JSON.stringify(payload)));
+    return this.paymentsService.handleWebhook(rawBody, sig);
   }
 }

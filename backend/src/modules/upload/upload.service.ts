@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { v2 as cloudinary } from 'cloudinary';
-import * as fs from 'fs';
 
 @Injectable()
 export class UploadService {
@@ -31,42 +30,36 @@ export class UploadService {
   async handleUpload(file: Express.Multer.File) {
     if (this.useCloudinary) {
       try {
+        // Upload from memory buffer using upload_stream
         const uploadResult = await new Promise<any>((resolve, reject) => {
-          cloudinary.uploader.upload(
-            file.path,
+          const uploadStream = cloudinary.uploader.upload_stream(
             { folder: 'e-learning' },
             (error, result) => {
               if (error) reject(error);
               else resolve(result);
             },
           );
+          uploadStream.end(file.buffer);
         });
-
-        // Delete local temp file after success
-        try {
-          fs.unlinkSync(file.path);
-        } catch (err) {
-          console.error('Failed to delete local temp file', err);
-        }
 
         return {
           url: uploadResult.secure_url,
           originalName: file.originalname,
-          filename: file.filename,
+          filename: uploadResult.public_id,
         };
       } catch (error) {
-        console.error('Cloudinary upload failed, falling back to local storage', error);
+        console.error('Cloudinary upload failed', error);
+        throw error;
       }
     }
 
-    // Local storage fallback
-    const port = this.config.get('PORT') || 3001;
-    const host = this.config.get('API_URL') || `http://localhost:${port}`;
+    // Fallback: return a data URI for development without Cloudinary
+    const base64 = file.buffer.toString('base64');
+    const dataUri = `data:${file.mimetype};base64,${base64}`;
     return {
-      url: `${host}/upload/file/${file.filename}`,
+      url: dataUri,
       originalName: file.originalname,
-      filename: file.filename,
+      filename: `upload-${Date.now()}`,
     };
   }
 }
-

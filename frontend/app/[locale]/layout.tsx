@@ -6,6 +6,8 @@ import { Providers } from '@/components/providers';
 import type { Metadata } from 'next';
 import '../globals.css';
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+
 const nunito = Nunito({
   subsets: ['latin'],
   variable: '--font-nunito',
@@ -43,11 +45,11 @@ export async function generateMetadata({
     openGraph: {
       title: t('ogTitle'),
       description: t('ogDescription'),
-      url: `http://localhost:3000/${locale}`,
+      url: `${SITE_URL}/${locale}`,
       siteName: 'The Codefather',
       images: [
         {
-          url: 'http://localhost:3000/icons/icon-192x192.png',
+          url: `${SITE_URL}/icons/icon-192x192.png`,
           width: 192,
           height: 192,
         },
@@ -59,7 +61,7 @@ export async function generateMetadata({
       card: 'summary_large_image',
       title: t('ogTitle'),
       description: t('ogDescription'),
-      images: ['http://localhost:3000/icons/icon-192x192.png'],
+      images: [`${SITE_URL}/icons/icon-192x192.png`],
     },
   };
 }
@@ -85,8 +87,8 @@ export default async function LocaleLayout({
     "@context": "https://schema.org",
     "@type": "Organization",
     "name": "The Codefather",
-    "url": `http://localhost:3000/${locale}`,
-    "logo": "http://localhost:3000/icons/icon-192x192.png",
+    "url": `${SITE_URL}/${locale}`,
+    "logo": `${SITE_URL}/icons/icon-192x192.png`,
     "sameAs": [
       "https://github.com",
       "https://twitter.com"
@@ -97,10 +99,10 @@ export default async function LocaleLayout({
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "The Codefather",
-    "url": `http://localhost:3000/${locale}`,
+    "url": `${SITE_URL}/${locale}`,
     "potentialAction": {
       "@type": "SearchAction",
-      "target": `http://localhost:3000/${locale}/courses?search={search_term_string}`,
+      "target": `${SITE_URL}/${locale}/courses?search={search_term_string}`,
       "query-input": "required name=search_term_string"
     }
   };
