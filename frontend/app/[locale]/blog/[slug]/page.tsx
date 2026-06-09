@@ -27,7 +27,7 @@ export default function BlogPostPage() {
     enabled: !!slug,
   });
 
-  const articleSchema = {
+  const articleSchema = post ? {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
     "headline": post.title,
@@ -46,14 +46,16 @@ export default function BlogPostPage() {
       }
     },
     "description": post.body?.replace(/<[^>]*>?/gm, '').substring(0, 160) || post.title
-  };
+  } : null;
 
   return (
     <div className="flex flex-col min-h-screen bg-base-200 text-base-content font-sans">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
-      />
+      {articleSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
+        />
+      )}
       <Navbar />
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow w-full flex flex-col gap-6">

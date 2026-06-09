@@ -122,7 +122,7 @@ export default function CourseDetail() {
     starCounts[starIdx]++;
   });
 
-  const courseSchema = {
+  const courseSchema = course ? {
     "@context": "https://schema.org",
     "@type": "Course",
     "name": course.title,
@@ -143,14 +143,16 @@ export default function CourseDetail() {
       "@type": "Person",
       "name": course.instructor?.username || "Mentor"
     }
-  };
+  } : null;
 
   return (
     <div className="flex flex-col min-h-screen bg-base-100 font-sans text-base-content">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(courseSchema) }}
-      />
+      {courseSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(courseSchema) }}
+        />
+      )}
       <Navbar />
 
       {/* ── 1. COURSE HERO BANNER & PREVIEW WIDGET ── */}
