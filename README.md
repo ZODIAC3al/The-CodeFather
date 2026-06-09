@@ -10,44 +10,39 @@ The platform separates the client-side Progressive Web App (PWA) sandbox from th
 
 ```mermaid
 graph TD
-    %% Clients and Cache
-    subgraph Client [Client Side / PWA Sandbox]
-        UI[Next.js 16 App Router UI / React 19]
-        SW[Service Worker / Workbox Runtime]
-        LS[(Local Storage / Cache API)]
+
+    subgraph Client["Client Side / PWA Sandbox"]
+        UI["Next.js 16 App Router UI<br/>React 19"]
+        SW["Service Worker<br/>Workbox Runtime"]
+        LS[("Local Storage / Cache API")]
     end
 
-    %% Network / API Gateway
-    subgraph Backend [Backend Service / NestJS REST API]
-        Controller[Controllers / REST API Router]
-        Auth[JWT Guards & Roles Auth]
-        Module[Modules / Business Logic]
+    subgraph Backend["Backend Service / NestJS REST API"]
+        Controller["Controllers<br/>REST API Router"]
+        Auth["JWT Guards & Roles Auth"]
+        Module["Modules<br/>Business Logic"]
     end
 
-    %% Persistence
-    subgraph Database [Persistence Layer]
-        Mongoose[Mongoose ODM]
-        MongoDB[(MongoDB Database)]
+    subgraph Database["Persistence Layer"]
+        Mongoose["Mongoose ODM"]
+        MongoDB[("MongoDB Database")]
     end
 
-    %% External Services
-    subgraph External [External Services]
-        Stripe[Stripe Gateway / Webhooks]
-        Cloudinary[Cloudinary Asset Storage]
+    subgraph External["External Services"]
+        Stripe["Stripe Gateway<br/>Webhooks"]
+        Cloudinary["Cloudinary Asset Storage"]
     end
 
-    %% Flows & Connections
-    UI -->|1. Render / Request| SW
-    SW -->|Cache Hit| LS
-    SW -->|Cache Miss / API Query (Axios JWT)| Controller
-    Controller -->|2. Authorize| Auth
-    Auth -->|3. Route Request| Module
-    Module -->|4. Query / Write| Mongoose
+    UI -->|"1. Render / Request"| SW
+    SW -->|"Cache Hit"| LS
+    SW -->|"Cache Miss / API Query (Axios JWT)"| Controller
+    Controller -->|"2. Authorize"| Auth
+    Auth -->|"3. Route Request"| Module
+    Module -->|"4. Query / Write"| Mongoose
     Mongoose --> MongoDB
-    Module -->|5. Charge / Webhook| Stripe
-    Module -->|6. Upload / Stream| Cloudinary
+    Module -->|"5. Charge / Webhook"| Stripe
+    Module -->|"6. Upload / Stream"| Cloudinary
 ```
-
 ### Core Technology Stack
 
 *   **Frontend Ecosystem:**
