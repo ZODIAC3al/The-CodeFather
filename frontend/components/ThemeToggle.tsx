@@ -5,6 +5,8 @@ import { useEffect, useState, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 
 const themes = [
+  { id: 'educare', icon: '🎓' },
+  { id: 'educare-dark', icon: '🌌' },
   { id: 'light', icon: '☀️' },
   { id: 'dark', icon: '🌙' },
   { id: 'cupcake', icon: '🧁' },
@@ -77,7 +79,7 @@ export default function ThemeToggle() {
       if (t.has(id)) {
         return t(id);
       }
-    } catch {}
+    } catch { }
     return id.charAt(0).toUpperCase() + id.slice(1);
   };
 
@@ -97,32 +99,37 @@ export default function ThemeToggle() {
       </button>
 
       {isOpen && (
-        <ul
-          className="absolute right-0 top-full mt-2 w-48 p-2 shadow-2xl bg-base-100 rounded-box border border-base-200 z-50 max-h-[60vh] overflow-y-auto"
+        <div
+          className="absolute ltr:right-0 rtl:left-0 top-full mt-2 w-72 sm:w-80 p-3 shadow-2xl bg-base-100 rounded-3xl border border-base-200 z-50 max-h-[50vh] overflow-y-auto grid grid-cols-2 gap-1.5 scrollbar-thin"
           role="menu"
         >
+          <div className="col-span-2 px-2 pb-1.5 mb-1 border-b border-base-200/60 flex items-center justify-between text-[10px] font-black text-base-content/40 uppercase tracking-widest">
+            <span>{t('toggle')}</span>
+            <span className="text-[9px] lowercase font-semibold text-primary">{themes.length} options</span>
+          </div>
           {themes.map((th) => {
             const isActive = theme === th.id || resolvedTheme === th.id;
             return (
-              <li key={th.id}>
-                <button
-                  role="menuitem"
-                  onClick={() => {
-                    setTheme(th.id);
-                    setIsOpen(false);
-                  }}
-                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm ${
-                    isActive ? 'bg-primary text-primary-content font-bold' : 'hover:bg-base-200 text-base-content font-medium'
-                  }`}
-                >
-                  <span className="text-lg">{th.icon}</span>
-                  <span>{getThemeLabel(th.id)}</span>
-                  {isActive && <span className="ms-auto">✓</span>}
-                </button>
-              </li>
+              <button
+                key={th.id}
+                role="menuitem"
+                onClick={() => {
+                  setTheme(th.id);
+                  setIsOpen(false);
+                }}
+                className={`flex items-center gap-2 px-2.5 py-2 rounded-xl transition-all duration-200 text-xs text-start ${
+                  isActive
+                    ? 'bg-primary text-primary-content font-bold shadow-md shadow-primary/20 scale-[0.98]'
+                    : 'hover:bg-base-200 text-base-content font-semibold hover:scale-[1.02] active:scale-95'
+                }`}
+              >
+                <span className="text-base shrink-0">{th.icon}</span>
+                <span className="truncate flex-1">{getThemeLabel(th.id)}</span>
+                {isActive && <span className="text-[9px] shrink-0 opacity-90">●</span>}
+              </button>
             );
           })}
-        </ul>
+        </div>
       )}
     </div>
   );

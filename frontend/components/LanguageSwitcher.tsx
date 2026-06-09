@@ -14,36 +14,23 @@ export default function LanguageSwitcher() {
 
   const handleSwitch = () => {
     const nextLocale = locale === 'en' ? 'ar' : 'en';
-
-    // Replace the locale prefix in the current path
-    // pathname is like /en/courses → /ar/courses
     const segments = pathname.split('/');
-    segments[1] = nextLocale; // replace locale segment
+    segments[1] = nextLocale;
     const nextPath = segments.join('/') || `/${nextLocale}`;
-
-    startTransition(() => {
-      router.replace(nextPath);
-    });
+    startTransition(() => router.replace(nextPath));
   };
 
   return (
     <button
-      id="language-switcher-btn"
       onClick={handleSwitch}
       disabled={isPending}
-      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all hover:opacity-80 disabled:opacity-50"
-      style={{
-        background: 'var(--surface-2)',
-        border: '1px solid var(--border)',
-        color: 'var(--text)',
-        direction: 'ltr', // always LTR so flag/label reads correctly
-      }}
+      className="btn btn-ghost btn-sm flex items-center gap-1.5 rounded-lg px-2 disabled:opacity-50"
       aria-label={`Switch to ${locale === 'en' ? 'Arabic' : 'English'}`}
+      dir="ltr"
     >
-      {/* Globe icon inline SVG */}
+      {/* Globe icon */}
       <svg
-        className="w-3.5 h-3.5 shrink-0"
-        style={{ color: 'var(--accent)' }}
+        className="w-4 h-4 shrink-0 text-base-content/70"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -54,7 +41,9 @@ export default function LanguageSwitcher() {
         <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
         <path d="M2 12h20" />
       </svg>
-      <span>{t('switchLanguage')}</span>
+      <span className="hidden sm:inline font-semibold text-xs">
+        {locale === 'en' ? 'AR' : 'EN'}
+      </span>
     </button>
   );
 }

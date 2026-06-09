@@ -147,7 +147,7 @@ export default function CourseDetail() {
 
   return (
     <div className="flex flex-col min-h-screen bg-base-100 font-sans text-base-content">
-      {courseSchema && (
+      {typeof window === 'undefined' && courseSchema && (
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(courseSchema) }}

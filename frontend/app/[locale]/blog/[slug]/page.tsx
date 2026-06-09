@@ -50,7 +50,7 @@ export default function BlogPostPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-base-200 text-base-content font-sans">
-      {articleSchema && (
+      {typeof window === 'undefined' && articleSchema && (
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}

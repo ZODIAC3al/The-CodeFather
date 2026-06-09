@@ -121,8 +121,6 @@ export default async function LocaleLayout({
         <meta name="apple-mobile-web-app-title" content="The Codefather" />
         <meta name="theme-color" content="#8B0000" />
         <link rel="manifest" href="/manifest.json" />
-      </head>
-      <body className="antialiased" suppressHydrationWarning>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(orgSchema) }}
@@ -131,6 +129,8 @@ export default async function LocaleLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
         />
+      </head>
+      <body className="antialiased" suppressHydrationWarning>
         <Providers locale={locale} messages={messages as Record<string, unknown>}>
           {children}
         </Providers>

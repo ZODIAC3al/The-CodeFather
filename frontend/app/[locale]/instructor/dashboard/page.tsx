@@ -176,15 +176,7 @@ export default function InstructorDashboard() {
     enabled: !!firstCourseId,
   });
 
-  // ── 7. Instructor meetings ──
-  const { data: meetings = [] } = useQuery({
-    queryKey: ['instructorMeetings'],
-    queryFn: async () => {
-      const { data } = await api.get('/instructor/meetings');
-      return data ?? [];
-    },
-    enabled: !!(isAuthenticated && user?.role === 'INSTRUCTOR'),
-  });
+
 
   // ── Grade submission mutation ──
   const gradeMutation = useMutation({

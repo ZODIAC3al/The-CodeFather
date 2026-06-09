@@ -11,6 +11,72 @@
 }
 
 @plugin "daisyui/theme" {
+  name: "educare";
+  default: true;
+  color-scheme: "light";
+  --color-primary: #9b87f5;
+  --color-primary-content: #ffffff;
+  --color-secondary: #22c55e;
+  --color-secondary-content: #ffffff;
+  --color-accent: #f59e0b;
+  --color-accent-content: #ffffff;
+  --color-neutral: #232233;
+  --color-neutral-content: #ffffff;
+  --color-base-100: #ffffff;
+  --color-base-200: #f4f2ff;
+  --color-base-300: #e5e1ff;
+  --color-base-content: #1e293b;
+
+  --color-info: #7dd3fc;
+  --color-info-content: #0c4a6e;
+  --color-success: #86efac;
+  --color-success-content: #14532d;
+  --color-warning: #fde68a;
+  --color-warning-content: #78350f;
+  --color-error: #fca5a5;
+  --color-error-content: #7f1d1d;
+
+  --rounded-box: 1rem;
+  --rounded-btn: 9999px;
+  --rounded-badge: 9999px;
+  --animation-btn: 0.2s;
+  --btn-text-case: none;
+}
+
+@plugin "daisyui/theme" {
+  name: "educare-dark";
+  default: false;
+  color-scheme: "dark";
+  --color-primary: #a78bfa;
+  --color-primary-content: #ffffff;
+  --color-secondary: #34d399;
+  --color-secondary-content: #ffffff;
+  --color-accent: #fbbf24;
+  --color-accent-content: #1c1917;
+  --color-neutral: #111827;
+  --color-neutral-content: #f9fafb;
+  --color-base-100: #1e1b2e;
+  --color-base-200: #16132a;
+  --color-base-300: #0f0d1f;
+  --color-base-content: #f1f0ff;
+
+  --color-info: #38bdf8;
+  --color-info-content: #0c4a6e;
+  --color-success: #4ade80;
+  --color-success-content: #14532d;
+  --color-warning: #fbbf24;
+  --color-warning-content: #1c1917;
+  --color-error: #f87171;
+  --color-error-content: #7f1d1d;
+
+  --rounded-box: 1rem;
+  --rounded-btn: 9999px;
+  --rounded-badge: 9999px;
+  --animation-btn: 0.2s;
+  --btn-text-case: none;
+}
+
+@plugin "daisyui/theme" {
   name: "godfather";
   default: false;
   color-scheme: "dark";
@@ -26,7 +92,7 @@
 
 @plugin "daisyui/theme" {
   name: "light";
-  default: true;
+  default: false;
   color-scheme: "light";
   --color-base-100: #ffffff;
   --color-base-200: #F4F9FA;
