@@ -52,8 +52,9 @@ export default function ThemeToggle() {
   const t = useTranslations('themes');
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+     setMounted(true);
+     // eslint-disable-next-line react-hooks/set-state-in-effect
+   }, []);
 
   // Close on outside click
   useEffect(() => {

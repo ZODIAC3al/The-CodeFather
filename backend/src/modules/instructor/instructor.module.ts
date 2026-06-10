@@ -11,6 +11,8 @@ import { Center, CenterSchema } from '../../schemas/center.schema';
 import { Order, OrderSchema } from '../../schemas/order.schema';
 import { Review, ReviewSchema } from '../../schemas/review.schema';
 
+import { NotificationsModule } from '../notifications/notifications.module';
+
 @Module({
   imports: [
     MongooseModule.forFeature([
@@ -23,6 +25,7 @@ import { Review, ReviewSchema } from '../../schemas/review.schema';
       { name: Order.name, schema: OrderSchema },
       { name: Review.name, schema: ReviewSchema },
     ]),
+    NotificationsModule,
   ],
   controllers: [InstructorController],
   providers: [InstructorService],

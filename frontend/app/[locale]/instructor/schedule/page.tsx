@@ -8,9 +8,9 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useLocale } from 'next-intl';
-import { 
-  LayoutDashboard, BookOpen, Users, Calendar, Star, Video, 
-  CreditCard, Settings, HelpCircle, Plus, MapPin, Globe, VideoOff, Save, Trash
+import {
+   LayoutDashboard, BookOpen, Users, Calendar, Star, Video, 
+   CreditCard, Settings, HelpCircle, MapPin, Save
 } from 'lucide-react';
 
 const NAV_MENU = [
@@ -83,11 +83,12 @@ export default function InstructorSchedulePage() {
     enabled: !!(isAuthenticated && user?.role === 'INSTRUCTOR' && user?.sub),
   });
 
-  // Default active center config
+// Default active center config
   useEffect(() => {
     if (isOffline && centers.length > 0 && !centerId) {
       setCenterId(centers[0].id || centers[0]._id);
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
   }, [isOffline, centers, centerId]);
 
   const activeCenter = centers.find((c: any) => (c.id || c._id) === centerId);
@@ -98,6 +99,7 @@ export default function InstructorSchedulePage() {
       setRoomName(classrooms[0].name);
       setCapacity(classrooms[0].capacity);
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
   }, [classrooms, roomName]);
 
   const handleCenterChange = (id: string) => {

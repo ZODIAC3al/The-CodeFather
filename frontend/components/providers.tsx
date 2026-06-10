@@ -3,6 +3,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState } from 'react';
 import { AuthProvider } from '@/contexts/auth-context';
+import { NotificationsProvider } from '@/contexts/notifications-context';
 import { ThemeProvider } from 'next-themes';
 import { NextIntlClientProvider } from 'next-intl';
 
@@ -73,7 +74,9 @@ export function Providers({ children, locale, messages }: ProvidersProps) {
     >
       <NextIntlClientProvider locale={locale} messages={messages}>
         <QueryClientProvider client={queryClient}>
-          <AuthProvider>{children}</AuthProvider>
+          <AuthProvider>
+            <NotificationsProvider>{children}</NotificationsProvider>
+          </AuthProvider>
         </QueryClientProvider>
       </NextIntlClientProvider>
     </ThemeProvider>

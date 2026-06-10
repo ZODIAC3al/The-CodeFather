@@ -13,3 +13,5 @@ export * from './membership.schema';
 export * from './center.schema';
 export * from './submission.schema';
 export * from './message.schema';
+export * from './notification.schema';
+

@@ -19,6 +19,8 @@ import { SearchModule } from './modules/search/search.module';
 import { SeedModule } from './modules/seed/seed.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { UsersModule } from './modules/users/users.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
+
 
 @Module({
   imports: [
@@ -53,6 +55,7 @@ import { UsersModule } from './modules/users/users.module';
     SeedModule,
     AdminModule,
     InstructorModule,
+    NotificationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

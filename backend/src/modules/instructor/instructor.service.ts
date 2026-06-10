@@ -10,6 +10,8 @@ import { Center } from '../../schemas/center.schema';
 import { Order } from '../../schemas/order.schema';
 import { Review } from '../../schemas/review.schema';
 
+import { NotificationsService } from '../notifications/notifications.service';
+
 @Injectable()
 export class InstructorService {
   constructor(
@@ -21,6 +23,7 @@ export class InstructorService {
     @InjectModel(Center.name) private centerModel: Model<Center>,
     @InjectModel(Order.name) private orderModel: Model<Order>,
     @InjectModel(Review.name) private reviewModel: Model<Review>,
+    private notificationsService: NotificationsService,
   ) {}
 
   async getCohorts(instructorId: string) {
@@ -91,6 +94,17 @@ export class InstructorService {
       await enrollment.save();
     }
 
+    try {
+      await this.notificationsService.createNotification(
+        submission.userId.toString(),
+        'Assignment Graded',
+        `Your assignment submission for course "${course.title}" has been graded. Score: ${grade}/100.`,
+        'ASSIGNMENT',
+      );
+    } catch (err) {
+      // ignore websocket/notification broadcast failure
+    }
+
     return submission.save();
   }
 
@@ -152,7 +166,28 @@ export class InstructorService {
       roomUrl: dto.roomUrl || `https://meet.jit.si/learnlocal-${Date.now()}`,
     });
 
-    return meeting.save();
+    const savedMeeting = await meeting.save();
+
+    if (savedMeeting.courseId) {
+      try {
+        const course = await this.courseModel.findById(savedMeeting.courseId);
+        const courseTitle = course ? course.title : 'Course';
+        const enrollments = await this.enrollmentModel.find({ courseId: savedMeeting.courseId }).exec();
+        
+        for (const enrollment of enrollments) {
+          await this.notificationsService.createNotification(
+            enrollment.userId.toString(),
+            'New Class Meeting Scheduled',
+            `A new session "${savedMeeting.title}" has been scheduled for "${courseTitle}".`,
+            'MEETING',
+          );
+        }
+      } catch (err) {
+        // ignore errors
+      }
+    }
+
+    return savedMeeting;
   }
 
   async getStudents(instructorId: string) {

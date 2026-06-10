@@ -1,6 +1,6 @@
-# The CodeFather: Hybrid E-Learning Management System (LMS)
+# LearnLocal: Hybrid E-Learning Management System (LMS)
 
-The CodeFather is a progressive, full-stack educational web application designed for hybrid classrooms. It bridges online course delivery with offline physical classroom management at local educational centers. Designed with a decoupled architecture, it features a NestJS REST API, a Next.js 16 (React 19) frontend Progressive Web App (PWA), and MongoDB for flexible data modeling.
+LearnLocal is a progressive, full-stack educational web application designed for hybrid classrooms. It bridges online course delivery with offline physical classroom management at local educational centers. Designed with a decoupled architecture, it features a NestJS REST API, a Next.js 16 (React 19) frontend Progressive Web App (PWA), and MongoDB for flexible data modeling.
 
 ---
 
@@ -10,39 +10,44 @@ The platform separates the client-side Progressive Web App (PWA) sandbox from th
 
 ```mermaid
 graph TD
-
-    subgraph Client["Client Side / PWA Sandbox"]
-        UI["Next.js 16 App Router UI<br/>React 19"]
-        SW["Service Worker<br/>Workbox Runtime"]
-        LS[("Local Storage / Cache API")]
+    %% Clients and Cache
+    subgraph Client [Client Side / PWA Sandbox]
+        UI[Next.js 16 App Router UI / React 19]
+        SW[Service Worker / Workbox Runtime]
+        LS[(Local Storage / Cache API)]
     end
 
-    subgraph Backend["Backend Service / NestJS REST API"]
-        Controller["Controllers<br/>REST API Router"]
-        Auth["JWT Guards & Roles Auth"]
-        Module["Modules<br/>Business Logic"]
+    %% Network / API Gateway
+    subgraph Backend [Backend Service / NestJS REST API]
+        Controller[Controllers / REST API Router]
+        Auth[JWT Guards & Roles Auth]
+        Module[Modules / Business Logic]
     end
 
-    subgraph Database["Persistence Layer"]
-        Mongoose["Mongoose ODM"]
-        MongoDB[("MongoDB Database")]
+    %% Persistence
+    subgraph Database [Persistence Layer]
+        Mongoose[Mongoose ODM]
+        MongoDB[(MongoDB Database)]
     end
 
-    subgraph External["External Services"]
-        Stripe["Stripe Gateway<br/>Webhooks"]
-        Cloudinary["Cloudinary Asset Storage"]
+    %% External Services
+    subgraph External [External Services]
+        Stripe[Stripe Gateway / Webhooks]
+        Cloudinary[Cloudinary Asset Storage]
     end
 
-    UI -->|"1. Render / Request"| SW
-    SW -->|"Cache Hit"| LS
-    SW -->|"Cache Miss / API Query (Axios JWT)"| Controller
-    Controller -->|"2. Authorize"| Auth
-    Auth -->|"3. Route Request"| Module
-    Module -->|"4. Query / Write"| Mongoose
+    %% Flows & Connections
+    UI -->|1. Render / Request| SW
+    SW -->|Cache Hit| LS
+    SW -->|Cache Miss / API Query (Axios JWT)| Controller
+    Controller -->|2. Authorize| Auth
+    Auth -->|3. Route Request| Module
+    Module -->|4. Query / Write| Mongoose
     Mongoose --> MongoDB
-    Module -->|"5. Charge / Webhook"| Stripe
-    Module -->|"6. Upload / Stream"| Cloudinary
+    Module -->|5. Charge / Webhook| Stripe
+    Module -->|6. Upload / Stream| Cloudinary
 ```
+
 ### Core Technology Stack
 
 *   **Frontend Ecosystem:**
@@ -293,3 +298,197 @@ export class InstructorController {
 
 ### Offline Styling Indicators
 When developing UI components that depend on network connection, monitor connection status. Display subtle visual badges to alert students when they are browsing offline content powered by the cached fallback layer.
+
+---
+
+# 11. Notification & Payment System Architecture
+
+## Notification System
+
+The platform supports real-time and persistent notifications for students, instructors, and administrators.
+
+### Notification Types
+
+| Event                | Student | Instructor | Admin |
+| -------------------- | ------- | ---------- | ----- |
+| Course Enrollment    | ✓       | ✓          | ✓     |
+| Payment Success      | ✓       | ✗          | ✓     |
+| Payment Failed       | ✓       | ✗          | ✓     |
+| Assignment Submitted | ✗       | ✓          | ✗     |
+| Assignment Graded    | ✓       | ✗          | ✗     |
+| New Course Published | ✓       | ✗          | ✗     |
+| Meeting Scheduled    | ✓       | ✓          | ✗     |
+| Membership Expiring  | ✓       | ✗          | ✓     |
+| System Announcement  | ✓       | ✓          | ✓     |
+
+### Notification Channels
+
+* In-App Notifications (via Socket.IO & Mongoose [NotificationSchema](file:///c:/Projects/E-Learning/backend/src/schemas/notification.schema.ts))
+* Push Notifications (PWA)
+* Email Notifications
+* Admin Broadcast Notifications
+
+### Database Schema
+
+```typescript
+@Schema({ timestamps: true })
+export class Notification {
+  @Prop({ required: true })
+  userId: string;
+
+  @Prop({ required: true })
+  title: string;
+
+  @Prop({ required: true })
+  message: string;
+
+  @Prop({ default: false })
+  read: boolean;
+
+  @Prop({
+    enum: [
+      'PAYMENT',
+      'COURSE',
+      'ASSIGNMENT',
+      'SYSTEM',
+      'MEETING'
+    ]
+  })
+  type: string;
+}
+```
+
+### Real-Time Delivery
+
+* NestJS WebSocket Gateway ([notifications.gateway.ts](file:///c:/Projects/E-Learning/backend/src/modules/notifications/notifications.gateway.ts))
+* Socket.IO
+* Redis Adapter (future scaling)
+* Push API for PWA notifications
+
+### Notification Flow
+
+```mermaid
+graph LR
+
+UserAction --> NotificationService
+NotificationService --> MongoDB
+NotificationService --> WebSocketGateway
+WebSocketGateway --> Browser
+Browser --> ServiceWorker
+ServiceWorker --> PushNotification
+```
+
+---
+
+# Payment System
+
+## Payment Features
+
+### One-Time Purchases
+
+* Course Enrollment
+* Premium Workshops
+* Physical Classroom Registration
+
+### Subscription Plans
+
+* Monthly Membership
+* Annual Membership
+* Corporate Plans
+
+### Stripe Integration
+
+#### Payment Flow
+
+```mermaid
+graph LR
+
+Student --> CheckoutPage
+CheckoutPage --> StripeCheckout
+StripeCheckout --> StripeWebhook
+StripeWebhook --> NestJS
+NestJS --> OrderDB
+NestJS --> EnrollmentDB
+NestJS --> NotificationService
+```
+
+### Stripe Webhooks
+
+Supported Events:
+
+* checkout.session.completed
+* invoice.paid
+* invoice.payment_failed
+* customer.subscription.created
+* customer.subscription.updated
+* customer.subscription.deleted
+* charge.refunded
+
+### Order Status Lifecycle
+
+```text
+PENDING
+   ↓
+PROCESSING
+   ↓
+PAID
+   ↓
+REFUNDED
+```
+
+Failed Flow:
+
+```text
+PENDING
+   ↓
+FAILED
+```
+
+### Payment Security
+
+* Stripe Hosted Checkout
+* JWT Protected APIs
+* Webhook Signature Verification
+* Idempotency Keys
+* Rate Limiting
+* Helmet Security Headers
+* HTTPS Only
+
+### Post-Payment Automation
+
+After successful payment:
+
+1. Verify Stripe webhook signature.
+2. Update Order status to PAID.
+3. Create Enrollment record.
+4. Activate Membership if applicable.
+5. Generate notification.
+6. Send confirmation email.
+7. Update analytics dashboard.
+
+### Refund Flow
+
+```mermaid
+graph LR
+
+Admin --> RefundRequest
+RefundRequest --> Stripe
+Stripe --> Webhook
+Webhook --> OrderUpdate
+OrderUpdate --> Notification
+Notification --> Student
+```
+
+### Payment Analytics
+
+Admin Dashboard Metrics:
+
+* Total Revenue
+* Monthly Revenue
+* Active Subscriptions
+* Failed Payments
+* Refund Rate
+* Average Order Value (AOV)
+* Revenue per Course
+* Revenue per Instructor
+

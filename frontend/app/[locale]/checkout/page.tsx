@@ -34,24 +34,21 @@ function CheckoutPage() {
     enabled: !!courseId,
   });
 
-  const enrollMutation = useMutation({
+  const checkoutMutation = useMutation({
     mutationFn: async () => {
-      // Mock payment delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      // Execute real backend enrollment (backend handles the mock charge)
-      const { data } = await api.post('/enrollments', { courseId });
+      const { data } = await api.post('/payments/checkout', { courseId });
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['myEnrollments'] });
-      if (course) {
-        router.push(`/${locale}/courses/${course.slug || course.id}/lessons`);
+      if (data && data.url) {
+        window.location.href = data.url;
       } else {
-        router.push(`/${locale}/profile`);
+        setErrorMsg('Invalid checkout session URL returned.');
       }
     },
     onError: (err: any) => {
-      setErrorMsg(err.response?.data?.message || 'Payment processing failed. Please try again.');
+      setErrorMsg(err.response?.data?.message || 'Payment session creation failed. Please try again.');
     }
   });
 
@@ -62,7 +59,7 @@ function CheckoutPage() {
       return;
     }
     setErrorMsg(null);
-    enrollMutation.mutate();
+    checkoutMutation.mutate();
   };
 
   if (isLoading) {
@@ -168,10 +165,10 @@ function CheckoutPage() {
 
                 <button
                   type="submit"
-                  disabled={enrollMutation.isPending}
+                  disabled={checkoutMutation.isPending}
                   className="btn-premium w-full py-4 rounded-xl font-bold mt-8 shadow-lg shadow-primary/20 hover:shadow-primary/40 flex justify-center items-center gap-2"
                 >
-                  {enrollMutation.isPending ? (
+                  {checkoutMutation.isPending ? (
                     <span className="loading loading-spinner loading-sm"></span>
                   ) : (
                     <>

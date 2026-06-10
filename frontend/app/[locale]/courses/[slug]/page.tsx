@@ -413,7 +413,7 @@ export default function CourseDetail() {
                         <div className="flex-grow space-y-1">
                           <div className="flex items-center justify-between">
                             <span className="font-bold text-sm text-base-content">{r.user?.username || 'Student User'}</span>
-                            <span className="text-[10px] text-base-content/40 font-bold">{new Date(r.createdAt || Date.now()).toLocaleDateString()}</span>
+                            <span className="text-[10px] text-base-content/40 font-bold">{r.createdAt ? new Date(r.createdAt).toLocaleDateString() : ''}</span>
                           </div>
                           <div className="flex items-center gap-0.5">
                             {[1, 2, 3, 4, 5].map((s) => (

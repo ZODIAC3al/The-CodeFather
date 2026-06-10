@@ -30,6 +30,12 @@ export class AuthController {
     return this.authService.login(req.user);
   }
 
+  @Public()
+  @Post('google')
+  googleLogin(@Body() body: { credential: string; role?: string }) {
+    return this.authService.googleLogin(body.credential, body.role || 'STUDENT');
+  }
+
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Post('refresh')
@@ -61,3 +67,4 @@ export class AuthController {
     };
   }
 }
+

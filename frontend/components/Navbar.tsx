@@ -3,8 +3,9 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/auth-context';
+import { useNotifications } from '@/contexts/notifications-context';
 import { useState, useEffect } from 'react';
-import { Menu, MonitorSmartphone, Home, BookOpen, Video, User, Plus, Search } from 'lucide-react';
+import { Menu, MonitorSmartphone, Home, BookOpen, Video, User, Plus, Search, Bell, CreditCard } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
@@ -213,6 +214,9 @@ export default function Navbar({ hideDownload = false }: NavbarProps) {
             <LanguageSwitcher />
             <ThemeToggle />
 
+            {/* Notifications Dropdown */}
+            {isAuthenticated && <NotificationDropdown />}
+
             {/* Auth */}
             {isAuthenticated ? (
               <div className="dropdown dropdown-end ml-1">
@@ -356,5 +360,104 @@ export default function Navbar({ hideDownload = false }: NavbarProps) {
         })}
       </div>
     </>
+  );
+}
+
+function NotificationDropdown() {
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
+
+  const getTypeConfig = (type: string) => {
+    switch (type) {
+      case 'PAYMENT':
+        return { icon: CreditCard, color: 'text-success bg-success/15' };
+      case 'COURSE':
+        return { icon: BookOpen, color: 'text-primary bg-primary/15' };
+      case 'ASSIGNMENT':
+        return { icon: Plus, color: 'text-warning bg-warning/15' };
+      case 'MEETING':
+        return { icon: Video, color: 'text-info bg-info/15' };
+      default:
+        return { icon: Home, color: 'text-neutral bg-neutral/15' };
+    }
+  };
+
+  return (
+    <div className="dropdown dropdown-end ml-1">
+      <button tabIndex={0} className="btn btn-ghost btn-circle relative">
+        <Bell className="w-5 h-5 text-base-content/80" />
+        {unreadCount > 0 && (
+          <span className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-error text-error-content text-[9px] font-black flex items-center justify-center animate-pulse">
+            {unreadCount}
+          </span>
+        )}
+      </button>
+
+      <div
+        tabIndex={0}
+        className="dropdown-content mt-3 z-[100] p-4 shadow-2xl bg-base-100 border border-base-300 rounded-3xl w-80 sm:w-96 text-left"
+      >
+        <div className="flex justify-between items-center pb-3 border-b border-base-300 mb-3">
+          <h3 className="font-extrabold text-sm text-base-content flex items-center gap-1.5">
+            Notifications
+            {unreadCount > 0 && (
+              <span className="badge badge-error badge-sm text-[10px] font-bold">{unreadCount} new</span>
+            )}
+          </h3>
+          {unreadCount > 0 && (
+            <button
+              onClick={() => markAllAsRead()}
+              className="text-[10px] text-primary font-bold hover:underline cursor-pointer"
+            >
+              Mark all read
+            </button>
+          )}
+        </div>
+
+        <div className="max-h-64 overflow-y-auto space-y-2.5">
+          {notifications.length === 0 ? (
+            <div className="py-8 text-center text-xs font-semibold text-base-content/40 font-medium">
+              No notifications yet.
+            </div>
+          ) : (
+            notifications.map((item) => {
+              const { icon: Icon, color } = getTypeConfig(item.type);
+              return (
+                <div
+                  key={item._id}
+                  onClick={() => !item.read && markAsRead(item._id)}
+                  className={`
+                    p-3 rounded-2xl flex gap-3 transition-colors text-xs cursor-pointer border
+                    ${item.read 
+                      ? 'bg-base-150/10 border-transparent hover:bg-base-200/50' 
+                      : 'bg-primary/5 border-primary/20 hover:bg-primary/10'
+                    }
+                  `}
+                >
+                  <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${color}`}>
+                    <Icon className="w-4 h-4" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-start gap-2">
+                      <h4 className={`font-bold text-base-content text-[11px] truncate ${!item.read && 'text-primary'}`}>
+                        {item.title}
+                      </h4>
+                      {!item.read && (
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary shrink-0 mt-1" />
+                      )}
+                    </div>
+                    <p className="text-[10px] text-base-content/65 leading-relaxed mt-0.5 line-clamp-2">
+                      {item.message}
+                    </p>
+                    <span className="text-[8px] text-base-content/40 font-bold block mt-1.5">
+                      {new Date(item.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
+    </div>
   );
 }

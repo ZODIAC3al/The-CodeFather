@@ -60,13 +60,14 @@ function CoursesContent() {
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
   const [isPriceDropdownOpen, setIsPriceDropdownOpen] = useState(false);
 
-  // Sync inputs with URL parameter updates
+// Sync inputs with URL parameter updates
   useEffect(() => {
     setSearchText(searchParamQuery);
     setSelectedCategory(categoryParamQuery);
     setMinPrice(minPriceParamQuery);
     setMaxPrice(maxPriceParamQuery);
     setPage(Number(pageParamQuery));
+    // eslint-disable-next-line react-hooks/set-state-in-effect
   }, [searchParamQuery, categoryParamQuery, minPriceParamQuery, maxPriceParamQuery, pageParamQuery]);
 
   // Query categories

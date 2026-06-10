@@ -5,6 +5,8 @@ import { Model } from 'mongoose';
 import { Course } from '../../schemas/course.schema';
 import { Order } from '../../schemas/order.schema';
 import { Enrollment } from '../../schemas/enrollment.schema';
+import { User } from '../../schemas/user.schema';
+import { NotificationsService } from '../notifications/notifications.service';
 import Stripe from 'stripe';
 
 @Injectable()
@@ -16,6 +18,8 @@ export class PaymentsService {
     @InjectModel(Course.name) private courseModel: Model<Course>,
     @InjectModel(Order.name) private orderModel: Model<Order>,
     @InjectModel(Enrollment.name) private enrollmentModel: Model<Enrollment>,
+    @InjectModel(User.name) private userModel: Model<User>,
+    private notificationsService: NotificationsService,
     private config: ConfigService,
   ) {
     const key = this.config.get<string>('STRIPE_SECRET_KEY');
@@ -88,6 +92,7 @@ export class PaymentsService {
         userId,
         courseId,
       });
+      await this.triggerPurchaseNotifications(userId, courseId);
     } catch (e) {
       // already enrolled
     }
@@ -117,12 +122,54 @@ export class PaymentsService {
             userId,
             courseId,
           });
+          await this.triggerPurchaseNotifications(userId, courseId);
         } catch {}
       }
       return { received: true };
     } catch (err) {
       this.logger.error('Stripe webhook handling failed.', err);
       throw err;
+    }
+  }
+
+  private async triggerPurchaseNotifications(userId: string, courseId: string) {
+    try {
+      const course = await this.courseModel.findById(courseId);
+      if (!course) return;
+
+      const student = await this.userModel.findById(userId);
+      const studentName = student ? (student.fullName || student.username) : 'A student';
+
+      // 1. Notify Student: Payment Success & Course Enrollment
+      await this.notificationsService.createNotification(
+        userId,
+        'Payment Successful',
+        `You have successfully purchased and enrolled in "${course.title}".`,
+        'PAYMENT',
+      );
+
+      // 2. Notify Instructor: Course Enrollment
+      if (course.instructorId) {
+        await this.notificationsService.createNotification(
+          course.instructorId,
+          'New Enrollment',
+          `${studentName} has enrolled in your course "${course.title}".`,
+          'COURSE',
+        );
+      }
+
+      // 3. Notify Admins: Payment Success & Course Enrollment
+      const admins = await this.userModel.find({ role: 'ADMIN' });
+      for (const admin of admins) {
+        await this.notificationsService.createNotification(
+          admin._id.toString(),
+          'New Course Sale',
+          `User ${studentName} purchased "${course.title}" for $${course.discountPrice ?? course.price}.`,
+          'PAYMENT',
+        );
+      }
+    } catch (err) {
+      this.logger.error('Failed to trigger purchase notifications', err);
     }
   }
 }

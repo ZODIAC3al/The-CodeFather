@@ -10,6 +10,8 @@ import { Order, OrderSchema } from '../../schemas/order.schema';
 import { Center, CenterSchema } from '../../schemas/center.schema';
 import { Meeting, MeetingSchema } from '../../schemas/meeting.schema';
 
+import { NotificationsModule } from '../notifications/notifications.module';
+
 @Module({
   imports: [
     MongooseModule.forFeature([
@@ -21,6 +23,7 @@ import { Meeting, MeetingSchema } from '../../schemas/meeting.schema';
       { name: Center.name, schema: CenterSchema },
       { name: Meeting.name, schema: MeetingSchema },
     ]),
+    NotificationsModule,
   ],
   controllers: [AdminController],
   providers: [AdminService],

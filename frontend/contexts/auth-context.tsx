@@ -23,6 +23,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (username: string, password: string) => Promise<void>;
   register: (email: string, username: string, password: string, role?: string) => Promise<void>;
+  loginWithGoogle: (credential: string, role?: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
   refreshUser: () => Promise<void>;
@@ -48,14 +49,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const token = localStorage.getItem('access_token');
-    if (token) {
-      api.get('/auth/me')
-        .then(r => setUser(r.data))
-        .catch(() => localStorage.removeItem('access_token'))
-        .finally(() => setIsLoading(false));
-    } else {
+    if (!token) {
       setIsLoading(false);
+      return;
     }
+    api.get('/auth/me')
+      .then(r => setUser(r.data))
+      .catch(() => localStorage.removeItem('access_token'))
+      .finally(() => setIsLoading(false));
+    // eslint-disable-next-line react-hooks/set-state-in-effect
   }, []);
 
   const login = async (username: string, password: string) => {
@@ -72,13 +74,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(me.data);
   };
 
+  const loginWithGoogle = async (credential: string, role?: string) => {
+    const { data } = await api.post('/auth/google', { credential, role });
+    localStorage.setItem('access_token', data.access_token);
+    const me = await api.get('/auth/me');
+    setUser(me.data);
+  };
+
   const logout = () => {
     localStorage.removeItem('access_token');
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, register, logout, isAuthenticated: !isLoading && !!user, refreshUser }}>
+    <AuthContext.Provider value={{ user, isLoading, login, register, loginWithGoogle, logout, isAuthenticated: !isLoading && !!user, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );
@@ -89,3 +98,4 @@ export const useAuth = () => {
   if (!ctx) throw new Error('useAuth must be used within AuthProvider');
   return ctx;
 };
+

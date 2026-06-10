@@ -9,6 +9,8 @@ import { Order } from '../../schemas/order.schema';
 import { Center } from '../../schemas/center.schema';
 import { Meeting } from '../../schemas/meeting.schema';
 
+import { NotificationsService } from '../notifications/notifications.service';
+
 @Injectable()
 export class AdminService {
   constructor(
@@ -19,6 +21,7 @@ export class AdminService {
     @InjectModel(Order.name) private orderModel: Model<Order>,
     @InjectModel(Center.name) private centerModel: Model<Center>,
     @InjectModel(Meeting.name) private meetingModel: Model<Meeting>,
+    private notificationsService: NotificationsService,
   ) {}
 
   async getAnalytics() {
@@ -177,7 +180,38 @@ export class AdminService {
     const course = await this.courseModel.findById(courseId);
     if (!course) throw new NotFoundException('Course not found');
     course.published = true;
-    return course.save();
+    const savedCourse = await course.save();
+
+    // 1. Notify Instructor
+    if (savedCourse.instructorId) {
+      try {
+        await this.notificationsService.createNotification(
+          savedCourse.instructorId.toString(),
+          'Course Approved',
+          `Your course blueprint "${savedCourse.title}" has been reviewed and approved by the administrator.`,
+          'COURSE',
+        );
+      } catch (err) {
+        // ignore
+      }
+    }
+
+    // 2. Notify Students
+    try {
+      const students = await this.userModel.find({ role: 'STUDENT' }).exec();
+      for (const student of students) {
+        await this.notificationsService.createNotification(
+          student._id.toString(),
+          'New Course Published',
+          `A new course "${savedCourse.title}" is now available. Enroll today to start learning!`,
+          'COURSE',
+        );
+      }
+    } catch (err) {
+      // ignore
+    }
+
+    return savedCourse;
   }
 
   async rejectCourse(courseId: string) {
