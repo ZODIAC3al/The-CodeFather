@@ -7,47 +7,50 @@ LearnLocal is a progressive, full-stack educational web application designed for
 ## 1. System Architecture
 
 The platform separates the client-side Progressive Web App (PWA) sandbox from the enterprise-grade backend API, utilizing service workers for local storage, caching, and offline resilience.
-
 ```mermaid
-graph TD
-    %% Clients and Cache
-    subgraph Client [Client Side / PWA Sandbox]
-        UI[Next.js 16 App Router UI / React 19]
-        SW[Service Worker / Workbox Runtime]
-        LS[(Local Storage / Cache API)]
-    end
+flowchart LR
 
-    %% Network / API Gateway
-    subgraph Backend [Backend Service / NestJS REST API]
-        Controller[Controllers / REST API Router]
-        Auth[JWT Guards & Roles Auth]
-        Module[Modules / Business Logic]
-    end
+subgraph Client["Client Layer (PWA)"]
+    UI["Next.js 16 App Router / React 19"]
+    SW["Service Worker / Workbox"]
+    CACHE[("Cache API / Local Storage")]
+end
 
-    %% Persistence
-    subgraph Database [Persistence Layer]
-        Mongoose[Mongoose ODM]
-        MongoDB[(MongoDB Database)]
-    end
+subgraph API["Backend API Layer"]
+    CTRL["NestJS Controllers"]
+    AUTH["JWT Authentication & Role Guards"]
+    SERVICE["Business Services"]
+end
 
-    %% External Services
-    subgraph External [External Services]
-        Stripe[Stripe Gateway / Webhooks]
-        Cloudinary[Cloudinary Asset Storage]
-    end
+subgraph Data["Data Layer"]
+    ODM["Mongoose ODM"]
+    DB[("MongoDB")]
+end
 
-    %% Flows & Connections
-    UI -->|1. Render / Request| SW
-    SW -->|Cache Hit| LS
-    SW -->|Cache Miss / API Query (Axios JWT)| Controller
-    Controller -->|2. Authorize| Auth
-    Auth -->|3. Route Request| Module
-    Module -->|4. Query / Write| Mongoose
-    Mongoose --> MongoDB
-    Module -->|5. Charge / Webhook| Stripe
-    Module -->|6. Upload / Stream| Cloudinary
+subgraph External["External Integrations"]
+    STRIPE["Stripe Payments & Webhooks"]
+    CLOUD["Cloudinary Storage"]
+end
+
+UI -->|Request Data| SW
+SW -->|Cache Hit| CACHE
+SW -->|Cache Miss| CTRL
+
+CTRL --> AUTH
+AUTH --> SERVICE
+
+SERVICE --> ODM
+ODM --> DB
+
+SERVICE -->|Payment Processing| STRIPE
+SERVICE -->|Media Uploads| CLOUD
+
+DB --> ODM
+ODM --> SERVICE
+SERVICE --> CTRL
+CTRL --> SW
+SW --> UI
 ```
-
 ### Core Technology Stack
 
 *   **Frontend Ecosystem:**
