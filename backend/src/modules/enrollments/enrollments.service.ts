@@ -10,7 +10,9 @@ export class EnrollmentsService {
   ) {}
 
   async enroll(userId: string, courseId: string) {
-    const existing = await this.enrollmentModel.findOne({ userId, courseId }).exec();
+    const existing = await this.enrollmentModel
+      .findOne({ userId, courseId })
+      .exec();
     if (existing) {
       throw new ConflictException('Already enrolled in this course');
     }
@@ -19,7 +21,8 @@ export class EnrollmentsService {
   }
 
   async findMyEnrollments(userId: string) {
-    const list = await this.enrollmentModel.find({ userId })
+    const list = await this.enrollmentModel
+      .find({ userId })
       .populate({
         path: 'courseId',
         populate: [
@@ -49,13 +52,15 @@ export class EnrollmentsService {
   }
 
   async updateProgress(userId: string, courseId: string, progress: number) {
-    return this.enrollmentModel.findOneAndUpdate(
-      { userId, courseId },
-      {
-        progress,
-        completedAt: progress >= 100 ? new Date() : null,
-      },
-      { new: true },
-    ).exec();
+    return this.enrollmentModel
+      .findOneAndUpdate(
+        { userId, courseId },
+        {
+          progress,
+          completedAt: progress >= 100 ? new Date() : null,
+        },
+        { new: true },
+      )
+      .exec();
   }
 }

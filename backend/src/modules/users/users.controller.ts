@@ -1,4 +1,13 @@
-import { Controller, Get, Patch, Body, UseGuards, Request, ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Patch,
+  Body,
+  UseGuards,
+  Request,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
@@ -20,10 +29,11 @@ export class UsersController {
   @Patch('profile')
   async updateProfile(
     @Request() req: any,
-    @Body() body: { 
-      email?: string; 
-      username?: string; 
-      bio?: string; 
+    @Body()
+    body: {
+      email?: string;
+      username?: string;
+      bio?: string;
       avatar?: string;
       fullName?: string;
       nickName?: string;
@@ -31,7 +41,7 @@ export class UsersController {
       country?: string;
       language?: string;
       timeZone?: string;
-    }
+    },
   ) {
     const userId = req.user.sub;
     const currentUser = await this.usersService.findById(userId);
@@ -45,7 +55,9 @@ export class UsersController {
 
     // Username unique check
     if (body.username && body.username !== (currentUser as any).username) {
-      const usernameExists = await this.usersService.findOneByUsername(body.username);
+      const usernameExists = await this.usersService.findOneByUsername(
+        body.username,
+      );
       if (usernameExists) throw new ConflictException('Username already taken');
     }
 

@@ -19,4 +19,5 @@ export class MembershipPlan {
   features: string[];
 }
 
-export const MembershipPlanSchema: MongooseSchema = SchemaFactory.createForClass(MembershipPlan);
+export const MembershipPlanSchema: MongooseSchema =
+  SchemaFactory.createForClass(MembershipPlan);

@@ -12,7 +12,7 @@ import Link from 'next/link';
 import { 
   User, Camera, Mail, Plus, Search, Bell, Globe, 
   LayoutDashboard, BookOpen, GraduationCap, MessageSquare, Settings, 
-  CheckCircle, Clock, Video, ArrowRight, Compass, Calendar, CreditCard, Terminal
+  CheckCircle, Clock, Video, ArrowRight, Compass, Calendar
 } from 'lucide-react';
 
 export default function ProfilePage() {
@@ -93,8 +93,6 @@ export default function ProfilePage() {
     );
   }
 
-  const [triggeringType, setTriggeringType] = useState<string | null>(null);
-
   const handleAvatarClick = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
@@ -141,43 +139,6 @@ export default function ProfilePage() {
       setMsg({ type: 'error', text: err.response?.data?.message || 'Failed to update profile' });
     } finally {
       setIsSaving(false);
-    }
-  };
-
-  const handleTriggerTestNotification = async (type: 'PAYMENT' | 'COURSE' | 'ASSIGNMENT' | 'MEETING' | 'SYSTEM') => {
-    setTriggeringType(type);
-    let title = 'Test Alert';
-    let message = 'This is a test notification generated from the developer console.';
-    
-    switch (type) {
-      case 'PAYMENT':
-        title = 'Payment Received';
-        message = 'Your Stripe checkout payment of $19.99 for Premium Plan succeeded.';
-        break;
-      case 'COURSE':
-        title = 'New Course Published';
-        message = 'Next.js 15 App Router & Strict TypeScript Course is now live!';
-        break;
-      case 'ASSIGNMENT':
-        title = 'Assignment Graded';
-        message = 'Your Full-Stack NestJS Gateway assignment score: 100/100 (Excellent).';
-        break;
-      case 'MEETING':
-        title = 'Class Slot Booked';
-        message = 'Live study circle video slot booked with Instructor Bob for tomorrow 10:00 AM.';
-        break;
-      case 'SYSTEM':
-        title = 'System Update';
-        message = 'Core API database migration completed. WebSocket servers are now fully active.';
-        break;
-    }
-
-    try {
-      await api.post('/notifications/test', { title, message, type });
-    } catch (err) {
-      console.error('Failed to trigger test notification', err);
-    } finally {
-      setTriggeringType(null);
     }
   };
 
@@ -740,71 +701,6 @@ export default function ProfilePage() {
                   >
                     <Plus className="w-4 h-4" /> {t('addEmail')}
                   </button>
-                </div>
-
-                {/* Developer Tools: Test Notification System */}
-                <div className="mt-10 pt-8 border-t border-base-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Terminal className="w-5 h-5 text-primary" />
-                    <h3 className="text-sm font-black text-base-content/85 uppercase tracking-wider">
-                      Developer Tools: Real-time Alerts Simulation
-                    </h3>
-                  </div>
-                  <p className="text-xs text-base-content/50 font-bold mb-6">
-                    Trigger synthetic events to test frontend WebSocket integrations, Web Audio bell chime effects, and local desktop notifications.
-                  </p>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                    <button
-                      type="button"
-                      disabled={triggeringType !== null}
-                      onClick={() => handleTriggerTestNotification('PAYMENT')}
-                      className="btn btn-outline btn-sm rounded-xl font-bold hover:btn-success flex items-center gap-1.5 justify-start text-xs cursor-pointer py-2 px-3 h-auto"
-                    >
-                      <CreditCard className="w-3.5 h-3.5" />
-                      <span>{triggeringType === 'PAYMENT' ? 'Triggering...' : 'Payment Success'}</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      disabled={triggeringType !== null}
-                      onClick={() => handleTriggerTestNotification('COURSE')}
-                      className="btn btn-outline btn-sm rounded-xl font-bold hover:btn-primary flex items-center gap-1.5 justify-start text-xs cursor-pointer py-2 px-3 h-auto"
-                    >
-                      <BookOpen className="w-3.5 h-3.5" />
-                      <span>{triggeringType === 'COURSE' ? 'Triggering...' : 'New Course Pub'}</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      disabled={triggeringType !== null}
-                      onClick={() => handleTriggerTestNotification('ASSIGNMENT')}
-                      className="btn btn-outline btn-sm rounded-xl font-bold hover:btn-warning flex items-center gap-1.5 justify-start text-xs cursor-pointer py-2 px-3 h-auto"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>{triggeringType === 'ASSIGNMENT' ? 'Triggering...' : 'Assignment Graded'}</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      disabled={triggeringType !== null}
-                      onClick={() => handleTriggerTestNotification('MEETING')}
-                      className="btn btn-outline btn-sm rounded-xl font-bold hover:btn-info flex items-center gap-1.5 justify-start text-xs cursor-pointer py-2 px-3 h-auto"
-                    >
-                      <Video className="w-3.5 h-3.5" />
-                      <span>{triggeringType === 'MEETING' ? 'Triggering...' : 'Meeting Booked'}</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      disabled={triggeringType !== null}
-                      onClick={() => handleTriggerTestNotification('SYSTEM')}
-                      className="btn btn-outline btn-sm rounded-xl font-bold hover:btn-neutral flex items-center gap-1.5 justify-start text-xs cursor-pointer py-2 px-3 h-auto"
-                    >
-                      <Bell className="w-3.5 h-3.5" />
-                      <span>{triggeringType === 'SYSTEM' ? 'Triggering...' : 'System Broadcast'}</span>
-                    </button>
-                  </div>
                 </div>
 
               </div>

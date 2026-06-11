@@ -32,7 +32,8 @@ export class NotificationsController {
     return this.notificationsService.createNotification(
       req.user.sub,
       body.title || 'Test Notification',
-      body.message || 'This is a test notification generated via the developer console.',
+      body.message ||
+        'This is a test notification generated via the developer console.',
       body.type || 'SYSTEM',
     );
   }

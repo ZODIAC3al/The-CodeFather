@@ -1,4 +1,11 @@
-import { IsString, IsNumber, IsOptional, IsArray, Min, IsBoolean } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsOptional,
+  IsArray,
+  Min,
+  IsBoolean,
+} from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateCourseDto {
@@ -6,11 +13,15 @@ export class CreateCourseDto {
   @IsString()
   title: string;
 
-  @ApiProperty({ example: 'Learn Next.js from scratch, including App Router, SSR, and ISR.' })
+  @ApiProperty({
+    example: 'Learn Next.js from scratch, including App Router, SSR, and ISR.',
+  })
   @IsString()
   description: string;
 
-  @ApiProperty({ example: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3' })
+  @ApiProperty({
+    example: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3',
+  })
   @IsOptional()
   @IsString()
   thumbnail?: string;

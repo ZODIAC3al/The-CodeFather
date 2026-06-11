@@ -1,4 +1,12 @@
-import { Controller, Post, Body, UseGuards, Request, Get, NotFoundException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  Request,
+  Get,
+  NotFoundException,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { RegisterDto } from './dto/register.dto';
@@ -33,7 +41,10 @@ export class AuthController {
   @Public()
   @Post('google')
   googleLogin(@Body() body: { credential: string; role?: string }) {
-    return this.authService.googleLogin(body.credential, body.role || 'STUDENT');
+    return this.authService.googleLogin(
+      body.credential,
+      body.role || 'STUDENT',
+    );
   }
 
   @ApiBearerAuth()
@@ -67,4 +78,3 @@ export class AuthController {
     };
   }
 }
-

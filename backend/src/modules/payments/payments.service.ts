@@ -27,35 +27,42 @@ export class PaymentsService {
       try {
         this.stripe = new Stripe(key, { apiVersion: '2023-10-16' as any });
       } catch (err) {
-        this.logger.warn('Failed to initialize Stripe client. Using Mock checkout fallback.');
+        this.logger.warn(
+          'Failed to initialize Stripe client. Using Mock checkout fallback.',
+        );
       }
     } else {
-      this.logger.log('Stripe secret key is mock or missing. Using Mock checkout fallback.');
+      this.logger.log(
+        'Stripe secret key is mock or missing. Using Mock checkout fallback.',
+      );
     }
   }
 
   async createCheckoutSession(userId: string, courseId: string) {
     const course = await this.courseModel.findById(courseId);
     if (!course) throw new Error('Course not found');
-    
+
     const price = Number(course.discountPrice ?? course.price);
-    const frontendUrl = this.config.get('FRONTEND_URL') || 'http://localhost:3000';
+    const frontendUrl =
+      this.config.get('FRONTEND_URL') || 'http://localhost:3000';
 
     if (this.stripe) {
       try {
         const session = await this.stripe.checkout.sessions.create({
           payment_method_types: ['card'],
-          line_items: [{
-            price_data: {
-              currency: 'usd',
-              product_data: {
-                name: course.title,
-                images: course.thumbnail ? [course.thumbnail] : [],
+          line_items: [
+            {
+              price_data: {
+                currency: 'usd',
+                product_data: {
+                  name: course.title,
+                  images: course.thumbnail ? [course.thumbnail] : [],
+                },
+                unit_amount: Math.round(price * 100),
               },
-              unit_amount: Math.round(price * 100),
+              quantity: 1,
             },
-            quantity: 1,
-          }],
+          ],
           mode: 'payment',
           success_url: `${frontendUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}&course_id=${courseId}`,
           cancel_url: `${frontendUrl}/courses/${course.slug}`,
@@ -72,7 +79,10 @@ export class PaymentsService {
 
         return { url: session.url };
       } catch (err) {
-        this.logger.error('Stripe session creation failed, falling back to mock.', err);
+        this.logger.error(
+          'Stripe session creation failed, falling back to mock.',
+          err,
+        );
       }
     }
 
@@ -97,7 +107,9 @@ export class PaymentsService {
       // already enrolled
     }
 
-    return { url: `${frontendUrl}/checkout/success?session_id=${orderId}&course_id=${courseId}` };
+    return {
+      url: `${frontendUrl}/checkout/success?session_id=${orderId}&course_id=${courseId}`,
+    };
   }
 
   async handleWebhook(payload: Buffer, sig: string) {
@@ -107,11 +119,15 @@ export class PaymentsService {
     }
 
     try {
-      const event = this.stripe.webhooks.constructEvent(payload, sig, webhookSecret);
+      const event = this.stripe.webhooks.constructEvent(
+        payload,
+        sig,
+        webhookSecret,
+      );
       if (event.type === 'checkout.session.completed') {
-        const session = event.data.object as any;
+        const session = event.data.object;
         const { userId, courseId } = session.metadata!;
-        
+
         await this.orderModel.updateMany(
           { stripeId: session.id },
           { status: 'PAID' },
@@ -138,7 +154,9 @@ export class PaymentsService {
       if (!course) return;
 
       const student = await this.userModel.findById(userId);
-      const studentName = student ? (student.fullName || student.username) : 'A student';
+      const studentName = student
+        ? student.fullName || student.username
+        : 'A student';
 
       // 1. Notify Student: Payment Success & Course Enrollment
       await this.notificationsService.createNotification(

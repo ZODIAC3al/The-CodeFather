@@ -15,7 +15,9 @@ import { UsersModule } from '../users/users.module';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (cfg: ConfigService) => ({
-        secret: cfg.get('JWT_SECRET') || 'super-secret-jwt-key-learnlocal-platform-2026',
+        secret:
+          cfg.get('JWT_SECRET') ||
+          'super-secret-jwt-key-learnlocal-platform-2026',
         signOptions: { expiresIn: cfg.get('JWT_EXPIRES_IN') || '1d' },
       }),
       inject: [ConfigService],

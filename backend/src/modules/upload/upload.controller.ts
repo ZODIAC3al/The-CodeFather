@@ -1,4 +1,13 @@
-import { Controller, Post, UseInterceptors, UploadedFile, UseGuards, Get, Param, Res } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  UseInterceptors,
+  UploadedFile,
+  UseGuards,
+  Get,
+  Param,
+  Res,
+} from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadService } from './upload.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -42,6 +51,9 @@ export class UploadController {
   @Public()
   @Get('file/:filename')
   serveFile(@Param('filename') filename: string, @Res() res: any) {
-    return res.status(404).json({ message: 'Local file serving is disabled in production. Files are served via Cloudinary.' });
+    return res.status(404).json({
+      message:
+        'Local file serving is disabled in production. Files are served via Cloudinary.',
+    });
   }
 }

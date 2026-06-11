@@ -1,4 +1,13 @@
-import { Controller, Get, Post, Patch, Body, Param, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Body,
+  Param,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { InstructorService } from './instructor.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -27,9 +36,14 @@ export class InstructorController {
   gradeSubmission(
     @Param('id') submissionId: string,
     @Body() body: { grade: number; feedback: string },
-    @Request() req: any
+    @Request() req: any,
   ) {
-    return this.instructorService.gradeSubmission(submissionId, req.user.sub, body.grade, body.feedback);
+    return this.instructorService.gradeSubmission(
+      submissionId,
+      req.user.sub,
+      body.grade,
+      body.feedback,
+    );
   }
 
   @Get('schedule')

@@ -8,6 +8,8 @@ import { Review } from '../../schemas/review.schema';
 import { Order } from '../../schemas/order.schema';
 import { Center } from '../../schemas/center.schema';
 import { Meeting } from '../../schemas/meeting.schema';
+import { Settings } from '../../schemas/settings.schema';
+import { Faq } from '../../schemas/faq.schema';
 
 import { NotificationsService } from '../notifications/notifications.service';
 
@@ -21,6 +23,8 @@ export class AdminService {
     @InjectModel(Order.name) private orderModel: Model<Order>,
     @InjectModel(Center.name) private centerModel: Model<Center>,
     @InjectModel(Meeting.name) private meetingModel: Model<Meeting>,
+    @InjectModel(Settings.name) private settingsModel: Model<Settings>,
+    @InjectModel(Faq.name) private faqModel: Model<Faq>,
     private notificationsService: NotificationsService,
   ) {}
 
@@ -31,41 +35,49 @@ export class AdminService {
     // Global pass rate is the average of progress across all enrollments
     let globalPassRate = 0;
     if (activeStudents > 0) {
-      const totalProgress = enrollments.reduce((acc, curr) => acc + (curr.progress || 0), 0);
+      const totalProgress = enrollments.reduce(
+        (acc, curr) => acc + (curr.progress || 0),
+        0,
+      );
       globalPassRate = Math.round(totalProgress / activeStudents);
     }
 
-    const physicalCohorts = await this.meetingModel.countDocuments({ isOffline: true });
+    const physicalCohorts = await this.meetingModel.countDocuments({
+      isOffline: true,
+    });
 
     // Platform revenue: sum of amounts from PAID orders
     const paidOrders = await this.orderModel.find({ status: 'PAID' }).exec();
-    const platformRevenue = paidOrders.reduce((acc, curr) => acc + (curr.amount || 0), 0);
+    const platformRevenue = paidOrders.reduce(
+      (acc, curr) => acc + (curr.amount || 0),
+      0,
+    );
 
     // Dynamic 12-day revenue chart data
     const now = Date.now();
     const DAY = 86_400_000;
-    
+
     const revenueData = Array.from({ length: 12 }, (_, idx) => {
       const i = 11 - idx;
       const d = new Date(now - i * DAY);
       const dayStr = String(d.getDate()).padStart(2, '0');
-      
+
       // Filter orders on this day in current period vs prev period
       const startCurrent = new Date(d.setHours(0, 0, 0, 0)).getTime();
       const endCurrent = new Date(d.setHours(23, 59, 59, 999)).getTime();
-      
+
       const startPrev = startCurrent - 12 * DAY;
       const endPrev = endCurrent - 12 * DAY;
-      
+
       const currentRevenue = paidOrders
-        .filter(o => {
+        .filter((o) => {
           const ts = new Date((o as any).createdAt).getTime();
           return ts >= startCurrent && ts <= endCurrent;
         })
         .reduce((sum, o) => sum + (o.amount || 0), 0);
-        
+
       const prevRevenue = paidOrders
-        .filter(o => {
+        .filter((o) => {
           const ts = new Date((o as any).createdAt).getTime();
           return ts >= startPrev && ts <= endPrev;
         })
@@ -84,19 +96,19 @@ export class AdminService {
       const i = 5 - idx;
       const d = new Date(now - i * DAY);
       const dayStr = String(d.getDate()).padStart(2, '0');
-      
+
       const startCurrent = new Date(d.setHours(0, 0, 0, 0)).getTime();
       const endCurrent = new Date(d.setHours(23, 59, 59, 999)).getTime();
-      
+
       const startPrev = startCurrent - 6 * DAY;
       const endPrev = endCurrent - 6 * DAY;
 
-      const currentCount = allUsers.filter(u => {
+      const currentCount = allUsers.filter((u) => {
         const ts = new Date((u as any).createdAt).getTime();
         return ts >= startCurrent && ts <= endCurrent;
       }).length;
 
-      const prevCount = allUsers.filter(u => {
+      const prevCount = allUsers.filter((u) => {
         const ts = new Date((u as any).createdAt).getTime();
         return ts >= startPrev && ts <= endPrev;
       }).length;
@@ -119,38 +131,51 @@ export class AdminService {
   }
 
   async getLeaderboard() {
-    const students = await this.userModel.find({ role: 'STUDENT' }).select('-passwordHash').exec();
-    
+    const students = await this.userModel
+      .find({ role: 'STUDENT' })
+      .select('-passwordHash')
+      .exec();
+
     const leaderboard = await Promise.all(
       students.map(async (student) => {
-        const enrollments = await this.enrollmentModel.find({ userId: student._id.toString() }).exec();
-        const xp = enrollments.reduce((acc, curr) => acc + (curr.progress || 0), 0) * 10;
-        
+        const enrollments = await this.enrollmentModel
+          .find({ userId: student._id.toString() })
+          .exec();
+        const xp =
+          enrollments.reduce((acc, curr) => acc + (curr.progress || 0), 0) * 10;
+
         return {
           username: student.username,
           score: xp,
           user: {
             username: student.username,
             avatar: student.avatar,
-          }
+          },
         };
-      })
+      }),
     );
 
     return leaderboard.sort((a, b) => b.score - a.score).slice(0, 10);
   }
 
   async getAllUsers() {
-    return this.userModel.find().select('-passwordHash').sort({ createdAt: -1 }).exec();
+    return this.userModel
+      .find()
+      .select('-passwordHash')
+      .sort({ createdAt: -1 })
+      .exec();
   }
 
-  async updateUserRoleOrSuspension(userId: string, data: { role?: string; suspended?: boolean }) {
+  async updateUserRoleOrSuspension(
+    userId: string,
+    data: { role?: string; suspended?: boolean },
+  ) {
     const user = await this.userModel.findById(userId);
     if (!user) throw new NotFoundException('User not found');
-    
+
     if (data.role !== undefined) user.role = data.role;
     if (data.suspended !== undefined) user.suspended = data.suspended;
-    
+
     return user.save();
   }
 
@@ -158,7 +183,11 @@ export class AdminService {
     return this.centerModel.find().sort({ createdAt: -1 }).exec();
   }
 
-  async createCenter(dto: { name: string; location: string; classrooms: Array<{ name: string; capacity: number }> }) {
+  async createCenter(dto: {
+    name: string;
+    location: string;
+    classrooms: Array<{ name: string; capacity: number }>;
+  }) {
     const center = new this.centerModel(dto);
     return center.save();
   }
@@ -170,7 +199,8 @@ export class AdminService {
   }
 
   async getPendingCourses() {
-    return this.courseModel.find({ published: false })
+    return this.courseModel
+      .find({ published: false })
       .populate('instructorId', 'id username avatar')
       .sort({ createdAt: -1 })
       .exec();
@@ -220,19 +250,28 @@ export class AdminService {
     return this.courseModel.findByIdAndDelete(courseId).exec();
   }
 
-  async assignBlueprintToSlot(dto: { courseId: string; centerId: string; roomName: string; startAt: string; durationHours: number }) {
+  async assignBlueprintToSlot(dto: {
+    courseId: string;
+    centerId: string;
+    roomName: string;
+    startAt: string;
+    durationHours: number;
+  }) {
     const course = await this.courseModel.findById(dto.courseId);
     if (!course) throw new NotFoundException('Course blueprint not found');
 
     const center = await this.centerModel.findById(dto.centerId);
     if (!center) throw new NotFoundException('Center not found');
 
-    const classroom = center.classrooms.find(r => r.name === dto.roomName);
-    if (!classroom) throw new NotFoundException('Classroom not found in center');
+    const classroom = center.classrooms.find((r) => r.name === dto.roomName);
+    if (!classroom)
+      throw new NotFoundException('Classroom not found in center');
 
     // Create the meeting slot (representing physical cohort scheduling)
     const startAt = new Date(dto.startAt);
-    const endAt = new Date(startAt.getTime() + dto.durationHours * 60 * 60 * 1000);
+    const endAt = new Date(
+      startAt.getTime() + dto.durationHours * 60 * 60 * 1000,
+    );
 
     const meeting = new this.meetingModel({
       title: `${course.title} - Lecture Hour`,
@@ -252,5 +291,109 @@ export class AdminService {
     await course.save();
 
     return meeting.save();
+  }
+
+  async getPayments() {
+    return this.orderModel.find().sort({ createdAt: -1 }).exec();
+  }
+
+  async getPaymentsAnalytics() {
+    const totalRevenue = await this.orderModel
+      .aggregate([
+        { $match: { status: 'PAID' } },
+        { $group: { _id: null, total: { $sum: '$amount' } } },
+      ])
+      .then((r) => r[0]?.total || 0);
+
+    const monthlyRevenue = await this.orderModel
+      .aggregate([
+        {
+          $match: {
+            status: 'PAID',
+            createdAt: {
+              $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+            },
+          },
+        },
+        { $group: { _id: null, total: { $sum: '$amount' } } },
+      ])
+      .then((r) => r[0]?.total || 0);
+
+    const activeSubscriptions = await this.orderModel.countDocuments({
+      status: 'PAID',
+    });
+    const failedPayments = await this.orderModel.countDocuments({
+      status: 'FAILED',
+    });
+    const refunds = await this.orderModel.countDocuments({
+      status: 'REFUNDED',
+    });
+
+    return {
+      totalRevenue,
+      monthlyRevenue,
+      activeSubscriptions,
+      failedPayments,
+      refunds,
+    };
+  }
+
+  async refundPayment(orderId: string, reason?: string) {
+    const order = await this.orderModel.findById(orderId);
+    if (!order) throw new NotFoundException('Order not found');
+    order.status = 'REFUNDED';
+    await order.save();
+    return {
+      success: true,
+      message: reason || 'Payment refunded successfully',
+    };
+  }
+
+  async exportPayments() {
+    const payments = await this.orderModel
+      .find()
+      .sort({ createdAt: -1 })
+      .exec();
+    return payments.map((p: any) => ({
+      id: p._id,
+      user: p.userId,
+      course: p.courseId,
+      amount: p.amount,
+      status: p.status,
+      createdAt: p.createdAt,
+    }));
+  }
+
+  async getSettings() {
+    const settings = await this.settingsModel.findOne().exec();
+    if (!settings) {
+      const newSettings = new this.settingsModel({});
+      return newSettings.save();
+    }
+    return settings;
+  }
+
+  async updateSettings(data: Record<string, unknown>) {
+    const settings = await this.settingsModel.findOne().exec();
+    if (!settings) {
+      const newSettings = new this.settingsModel(data);
+      return newSettings.save();
+    }
+    Object.assign(settings, data);
+    return settings.save();
+  }
+
+  async getHelp() {
+    const faqs = await this.faqModel.find().exec();
+    return { faqs };
+  }
+
+  async createHelpTicket(body: { subject: string; message: string }) {
+    // Store ticket logic here - for now just return success
+    return { success: true, subject: body.subject };
+  }
+
+  async getFaqs() {
+    return this.faqModel.find().exec();
   }
 }

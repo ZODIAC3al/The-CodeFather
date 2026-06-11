@@ -21,6 +21,7 @@ export default function Meetings() {
   const queryClient = useQueryClient();
   const locale = useLocale();
   const t = useTranslations('meetings');
+  const tProvider = useTranslations('provider');
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [newTitle, setNewTitle] = useState('');
@@ -223,25 +224,25 @@ export default function Meetings() {
               </div>
 
               <form onSubmit={handleAddSubmit} className="p-6 space-y-5">
-                {/* Provider toggles */}
-                <div className="flex flex-col gap-2">
-                  <span className="text-xs font-bold uppercase tracking-wider text-base-content/70">{t('selectProvider')}</span>
-                  <div className="join">
-                    {PROVIDERS.map((p) => (
-                      <button
-                        key={p.id}
-                        type="button"
-                        onClick={() => setSelectedProvider(p.id)}
-                        className={`join-item btn btn-sm px-4 font-bold transition-all ${selectedProvider === p.id
-                          ? 'btn-primary'
-                          : 'btn-ghost border border-base-300'
-                          }`}
-                      >
-                        {p.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+{/* Provider toggles */}
+                 <div className="flex flex-col gap-2">
+                   <span className="text-xs font-bold uppercase tracking-wider text-base-content/70">{t('selectProvider')}</span>
+                   <div className="join">
+                     {PROVIDERS.map((p) => (
+                       <button
+                         key={p.id}
+                         type="button"
+                         onClick={() => setSelectedProvider(p.id)}
+                         className={`join-item btn btn-sm px-4 font-bold transition-all ${selectedProvider === p.id
+                           ? 'btn-primary'
+                           : 'btn-ghost border border-base-300'
+                           }`}
+                       >
+                         {p.id === 'meet' ? tProvider('meet') : p.id === 'teams' ? tProvider('teams') : tProvider('zoom')}
+                       </button>
+                     ))}
+                   </div>
+                 </div>
 
                 {addError && (
                   <div className="p-3 bg-error/10 text-error rounded-xl text-sm font-bold">{addError}</div>

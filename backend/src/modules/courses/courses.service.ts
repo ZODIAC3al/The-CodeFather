@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Course } from '../../schemas/course.schema';
@@ -21,7 +25,16 @@ export class CoursesService {
   ) {}
 
   async findAll(filters: CourseFilterDto) {
-    const { category, minPrice, maxPrice, search, page = 1, limit = 12, instructorId, showAll } = filters;
+    const {
+      category,
+      minPrice,
+      maxPrice,
+      search,
+      page = 1,
+      limit = 12,
+      instructorId,
+      showAll,
+    } = filters;
     const skip = (page - 1) * limit;
 
     const query: any = {};
@@ -31,9 +44,11 @@ export class CoursesService {
     if (instructorId) {
       query.instructorId = instructorId;
     }
-    
+
     if (category) {
-      const cat = await this.categoryModel.findOne({ name: { $regex: category, $options: 'i' } });
+      const cat = await this.categoryModel.findOne({
+        name: { $regex: category, $options: 'i' },
+      });
       if (cat) {
         query.categoryId = cat._id.toString();
       } else {
@@ -41,15 +56,15 @@ export class CoursesService {
         return { data: [], total: 0, page, limit, totalPages: 0 };
       }
     }
-    
+
     if (minPrice !== undefined) {
       query.price = { $gte: minPrice };
     }
-    
+
     if (maxPrice !== undefined) {
       query.price = { ...query.price, $lte: maxPrice };
     }
-    
+
     if (search) {
       query.$or = [
         { title: { $regex: search, $options: 'i' } },
@@ -58,7 +73,8 @@ export class CoursesService {
     }
 
     const [data, total] = await Promise.all([
-      this.courseModel.find(query)
+      this.courseModel
+        .find(query)
         .skip(skip)
         .limit(limit)
         .populate('instructorId', 'id username avatar')
@@ -70,8 +86,12 @@ export class CoursesService {
 
     const mappedData = await Promise.all(
       data.map(async (c) => {
-        const enrollmentsCount = await this.enrollmentModel.countDocuments({ courseId: c._id.toString() } as any);
-        const reviewsCount = await this.reviewModel.countDocuments({ courseId: c._id.toString() } as any);
+        const enrollmentsCount = await this.enrollmentModel.countDocuments({
+          courseId: c._id.toString(),
+        });
+        const reviewsCount = await this.reviewModel.countDocuments({
+          courseId: c._id.toString(),
+        });
         const obj = c.toObject();
         return {
           ...obj,
@@ -83,27 +103,40 @@ export class CoursesService {
       }),
     );
 
-    return { data: mappedData, total, page, limit, totalPages: Math.ceil(total / limit) };
+    return {
+      data: mappedData,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   async findOne(slug: string) {
     const isObjectId = /^[0-9a-fA-F]{24}$/.test(slug);
     const query = isObjectId ? { _id: slug } : { slug };
-    const course = await this.courseModel.findOne(query)
+    const course = await this.courseModel
+      .findOne(query)
       .populate('instructorId', 'id username avatar bio')
       .populate('categoryId')
       .exec();
-    
+
     if (!course) throw new NotFoundException('Course not found');
 
-    const lessons = await this.lessonModel.find({ courseId: course._id.toString() } as any).sort({ order: 1 }).exec();
-    const reviews = await this.reviewModel.find({ courseId: course._id.toString() } as any)
+    const lessons = await this.lessonModel
+      .find({ courseId: course._id.toString() })
+      .sort({ order: 1 })
+      .exec();
+    const reviews = await this.reviewModel
+      .find({ courseId: course._id.toString() } as any)
       .populate('userId', 'id username avatar')
       .limit(10)
       .sort({ createdAt: -1 })
       .exec();
 
-    const enrollmentsCount = await this.enrollmentModel.countDocuments({ courseId: course._id.toString() } as any);
+    const enrollmentsCount = await this.enrollmentModel.countDocuments({
+      courseId: course._id.toString(),
+    });
 
     const obj = course.toObject();
     return {
@@ -111,7 +144,7 @@ export class CoursesService {
       id: course._id.toString(),
       instructor: obj.instructorId,
       category: obj.categoryId,
-      lessons: lessons.map(l => ({ ...l.toObject(), id: l._id.toString() })),
+      lessons: lessons.map((l) => ({ ...l.toObject(), id: l._id.toString() })),
       reviews: reviews.map((r: any) => {
         const rObj = r.toObject();
         return {
@@ -125,8 +158,14 @@ export class CoursesService {
   }
 
   async create(dto: CreateCourseDto, instructorId: string) {
-    const slug = dto.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '-' + Date.now();
-    
+    const slug =
+      dto.title
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-]/g, '') +
+      '-' +
+      Date.now();
+
     const category = await this.categoryModel.findById(dto.categoryId);
     if (!category) throw new NotFoundException('Category not found');
 
@@ -135,7 +174,7 @@ export class CoursesService {
       slug,
       instructorId,
     });
-    
+
     return created.save();
   }
 
@@ -157,8 +196,10 @@ export class CoursesService {
     if (course.instructorId.toString() !== userId && role !== 'ADMIN') {
       throw new ForbiddenException('Not authorized to delete this course');
     }
-    
-    await this.lessonModel.deleteMany({ courseId: course._id.toString() } as any);
+
+    await this.lessonModel.deleteMany({
+      courseId: course._id.toString(),
+    });
     return this.courseModel.findByIdAndDelete(id).exec();
   }
 
@@ -166,7 +207,9 @@ export class CoursesService {
     const categories = await this.categoryModel.find().exec();
     return Promise.all(
       categories.map(async (cat) => {
-        const coursesCount = await this.courseModel.countDocuments({ categoryId: cat._id.toString() } as any);
+        const coursesCount = await this.courseModel.countDocuments({
+          categoryId: cat._id.toString(),
+        });
         return {
           ...cat.toObject(),
           id: cat._id.toString(),
@@ -177,7 +220,8 @@ export class CoursesService {
   }
 
   async getRecommended(userId?: string, limit = 8) {
-    const courses = await this.courseModel.find({ published: true })
+    const courses = await this.courseModel
+      .find({ published: true })
       .limit(limit)
       .populate('instructorId', 'id username avatar')
       .populate('categoryId')
@@ -185,7 +229,9 @@ export class CoursesService {
 
     return Promise.all(
       courses.map(async (c) => {
-        const enrollmentsCount = await this.enrollmentModel.countDocuments({ courseId: c._id.toString() } as any);
+        const enrollmentsCount = await this.enrollmentModel.countDocuments({
+          courseId: c._id.toString(),
+        });
         const obj = c.toObject();
         return {
           ...obj,
@@ -203,10 +249,12 @@ export class CoursesService {
     if (!course) throw new NotFoundException('Course not found');
 
     if (course.instructorId.toString() !== userId && role !== 'ADMIN') {
-      throw new ForbiddenException('Not authorized to manage lessons for this course');
+      throw new ForbiddenException(
+        'Not authorized to manage lessons for this course',
+      );
     }
 
-    const count = await this.lessonModel.countDocuments({ courseId } as any);
+    const count = await this.lessonModel.countDocuments({ courseId });
     const lesson = new this.lessonModel({
       ...dto,
       courseId,
@@ -223,10 +271,14 @@ export class CoursesService {
     if (!course) throw new NotFoundException('Course not found');
 
     if (course.instructorId.toString() !== userId && role !== 'ADMIN') {
-      throw new ForbiddenException('Not authorized to manage lessons for this course');
+      throw new ForbiddenException(
+        'Not authorized to manage lessons for this course',
+      );
     }
 
-    return this.lessonModel.findByIdAndUpdate(lessonId, dto, { new: true }).exec();
+    return this.lessonModel
+      .findByIdAndUpdate(lessonId, dto, { new: true })
+      .exec();
   }
 
   async deleteLesson(lessonId: string, userId: string, role: string) {
@@ -237,13 +289,18 @@ export class CoursesService {
     if (!course) throw new NotFoundException('Course not found');
 
     if (course.instructorId.toString() !== userId && role !== 'ADMIN') {
-      throw new ForbiddenException('Not authorized to manage lessons for this course');
+      throw new ForbiddenException(
+        'Not authorized to manage lessons for this course',
+      );
     }
 
     await this.lessonModel.findByIdAndDelete(lessonId).exec();
 
     // Recalculate order numbers for remaining course lessons
-    const remaining = await this.lessonModel.find({ courseId: course._id.toString() } as any).sort({ order: 1 }).exec();
+    const remaining = await this.lessonModel
+      .find({ courseId: course._id.toString() })
+      .sort({ order: 1 })
+      .exec();
     for (let i = 0; i < remaining.length; i++) {
       remaining[i].order = i + 1;
       await remaining[i].save();

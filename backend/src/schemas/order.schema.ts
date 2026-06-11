@@ -12,7 +12,11 @@ export class Order extends Document {
   @Prop({ required: true, type: Number })
   amount: number;
 
-  @Prop({ required: true, default: 'PENDING', enum: ['PENDING', 'PAID', 'FAILED', 'REFUNDED'] })
+  @Prop({
+    required: true,
+    default: 'PENDING',
+    enum: ['PENDING', 'PAID', 'FAILED', 'REFUNDED'],
+  })
   status: string;
 
   @Prop()

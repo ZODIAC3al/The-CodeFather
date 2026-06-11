@@ -1,4 +1,11 @@
-import { Controller, Get, Post, Body, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { MembershipsService } from './memberships.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Public } from '../../common/decorators/public.decorator';
@@ -25,7 +32,9 @@ export class MembershipsController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Post('subscribe')
-  @ApiBody({ schema: { type: 'object', properties: { planId: { type: 'string' } } } })
+  @ApiBody({
+    schema: { type: 'object', properties: { planId: { type: 'string' } } },
+  })
   purchaseMembership(@Body('planId') planId: string, @Request() req: any) {
     return this.membershipsService.purchaseMembership(req.user.sub, planId);
   }

@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Patch, Body, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Body,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { EnrollmentsService } from './enrollments.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ApiTags, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
@@ -16,18 +24,32 @@ export class EnrollmentsController {
   }
 
   @Post('enroll')
-  @ApiBody({ schema: { type: 'object', properties: { courseId: { type: 'string' } } } })
+  @ApiBody({
+    schema: { type: 'object', properties: { courseId: { type: 'string' } } },
+  })
   enroll(@Body('courseId') courseId: string, @Request() req: any) {
     return this.enrollmentsService.enroll(req.user.sub, courseId);
   }
 
   @Patch('progress')
-  @ApiBody({ schema: { type: 'object', properties: { courseId: { type: 'string' }, progress: { type: 'number' } } } })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        courseId: { type: 'string' },
+        progress: { type: 'number' },
+      },
+    },
+  })
   updateProgress(
     @Body('courseId') courseId: string,
     @Body('progress') progress: number,
     @Request() req: any,
   ) {
-    return this.enrollmentsService.updateProgress(req.user.sub, courseId, progress);
+    return this.enrollmentsService.updateProgress(
+      req.user.sub,
+      courseId,
+      progress,
+    );
   }
 }

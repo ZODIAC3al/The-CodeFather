@@ -9,7 +9,8 @@ import { Review, ReviewSchema } from '../../schemas/review.schema';
 import { Order, OrderSchema } from '../../schemas/order.schema';
 import { Center, CenterSchema } from '../../schemas/center.schema';
 import { Meeting, MeetingSchema } from '../../schemas/meeting.schema';
-
+import { Settings, SettingsSchema } from '../../schemas/settings.schema';
+import { Faq, FaqSchema } from '../../schemas/faq.schema';
 import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
@@ -22,6 +23,8 @@ import { NotificationsModule } from '../notifications/notifications.module';
       { name: Order.name, schema: OrderSchema },
       { name: Center.name, schema: CenterSchema },
       { name: Meeting.name, schema: MeetingSchema },
+      { name: Settings.name, schema: SettingsSchema },
+      { name: Faq.name, schema: FaqSchema },
     ]),
     NotificationsModule,
   ],

@@ -2,7 +2,10 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { Notification, NotificationSchema } from '../../schemas/notification.schema';
+import {
+  Notification,
+  NotificationSchema,
+} from '../../schemas/notification.schema';
 import { NotificationsService } from './notifications.service';
 import { NotificationsController } from './notifications.controller';
 import { NotificationsGateway } from './notifications.gateway';
@@ -15,7 +18,9 @@ import { NotificationsGateway } from './notifications.gateway';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (cfg: ConfigService) => ({
-        secret: cfg.get('JWT_SECRET') || 'super-secret-jwt-key-learnlocal-platform-2026',
+        secret:
+          cfg.get('JWT_SECRET') ||
+          'super-secret-jwt-key-learnlocal-platform-2026',
         signOptions: { expiresIn: cfg.get('JWT_EXPIRES_IN') || '1d' },
       }),
       inject: [ConfigService],

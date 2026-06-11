@@ -20,7 +20,7 @@ import { SeedModule } from './modules/seed/seed.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { UsersModule } from './modules/users/users.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
-
+import { HelpModule } from './modules/help/help.module';
 
 @Module({
   imports: [
@@ -56,6 +56,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
     AdminModule,
     InstructorModule,
     NotificationsModule,
+    HelpModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -2,7 +2,10 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { SeedService } from './seed.service';
 import { Category, CategorySchema } from '../../schemas/category.schema';
-import { MembershipPlan, MembershipPlanSchema } from '../../schemas/membership-plan.schema';
+import {
+  MembershipPlan,
+  MembershipPlanSchema,
+} from '../../schemas/membership-plan.schema';
 import { Course, CourseSchema } from '../../schemas/course.schema';
 import { Lesson, LessonSchema } from '../../schemas/lesson.schema';
 import { User, UserSchema } from '../../schemas/user.schema';

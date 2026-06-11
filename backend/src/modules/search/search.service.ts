@@ -13,7 +13,7 @@ export class SearchService {
 
   async search(q: string, page = 1, limit = 12) {
     const skip = (page - 1) * limit;
-    
+
     const query = {
       published: true,
       $or: [
@@ -24,7 +24,8 @@ export class SearchService {
     };
 
     const [data, total] = await Promise.all([
-      this.courseModel.find(query)
+      this.courseModel
+        .find(query)
         .skip(skip)
         .limit(limit)
         .populate('instructorId', 'id username avatar')
@@ -35,7 +36,9 @@ export class SearchService {
 
     const mapped = await Promise.all(
       data.map(async (c) => {
-        const enrollmentsCount = await this.enrollmentModel.countDocuments({ courseId: c._id.toString() } as any);
+        const enrollmentsCount = await this.enrollmentModel.countDocuments({
+          courseId: c._id.toString(),
+        });
         const obj = c.toObject();
         return {
           ...obj,

@@ -12,7 +12,8 @@ export class BlogService {
   async findAll(page = 1, limit = 9) {
     const skip = (page - 1) * limit;
     const [data, total] = await Promise.all([
-      this.blogPostModel.find({ publishedAt: { $ne: null } })
+      this.blogPostModel
+        .find({ publishedAt: { $ne: null } })
         .skip(skip)
         .limit(limit)
         .populate('authorId', 'id username avatar')
@@ -34,14 +35,15 @@ export class BlogService {
   }
 
   async findOne(slug: string) {
-    const post = await this.blogPostModel.findOne({ slug })
+    const post = await this.blogPostModel
+      .findOne({ slug })
       .populate('authorId', 'id username avatar bio')
       .exec();
-    
+
     if (!post) throw new NotFoundException('Post not found');
-    
+
     await this.blogPostModel.updateOne({ slug }, { $inc: { views: 1 } });
-    
+
     const obj = post.toObject();
     return {
       ...obj,
@@ -51,7 +53,13 @@ export class BlogService {
   }
 
   async create(dto: any, authorId: string) {
-    const slug = dto.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') + '-' + Date.now();
+    const slug =
+      dto.title
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-]/g, '') +
+      '-' +
+      Date.now();
     const post = new this.blogPostModel({
       title: dto.title,
       body: dto.body,

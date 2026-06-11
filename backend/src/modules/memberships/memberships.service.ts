@@ -7,7 +7,8 @@ import { Membership } from '../../schemas/membership.schema';
 @Injectable()
 export class MembershipsService {
   constructor(
-    @InjectModel(MembershipPlan.name) private membershipPlanModel: Model<MembershipPlan>,
+    @InjectModel(MembershipPlan.name)
+    private membershipPlanModel: Model<MembershipPlan>,
     @InjectModel(Membership.name) private membershipModel: Model<Membership>,
   ) {}
 
@@ -16,12 +17,13 @@ export class MembershipsService {
   }
 
   async getMyMembership(userId: string) {
-    const mem = await this.membershipModel.findOne({ userId })
+    const mem = await this.membershipModel
+      .findOne({ userId })
       .populate('planId')
       .exec();
-    
+
     if (!mem) return null;
-    
+
     const obj = mem.toObject();
     return {
       ...obj,
@@ -41,22 +43,22 @@ export class MembershipsService {
       expiresAt.setMonth(expiresAt.getMonth() + 1);
     }
 
-    return this.membershipModel.findOneAndUpdate(
-      { userId },
-      {
-        planId: plan._id,
-        expiresAt,
-        status: 'ACTIVE',
-      },
-      { upsert: true, new: true },
-    ).exec();
+    return this.membershipModel
+      .findOneAndUpdate(
+        { userId },
+        {
+          planId: plan._id,
+          expiresAt,
+          status: 'ACTIVE',
+        },
+        { upsert: true, new: true },
+      )
+      .exec();
   }
 
   async cancelMembership(userId: string) {
-    return this.membershipModel.findOneAndUpdate(
-      { userId },
-      { status: 'CANCELLED' },
-      { new: true },
-    ).exec();
+    return this.membershipModel
+      .findOneAndUpdate({ userId }, { status: 'CANCELLED' }, { new: true })
+      .exec();
   }
 }

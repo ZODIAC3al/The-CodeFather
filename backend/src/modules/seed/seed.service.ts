@@ -20,7 +20,8 @@ export class SeedService implements OnModuleInit {
 
   constructor(
     @InjectModel(Category.name) private categoryModel: Model<Category>,
-    @InjectModel(MembershipPlan.name) private membershipPlanModel: Model<MembershipPlan>,
+    @InjectModel(MembershipPlan.name)
+    private membershipPlanModel: Model<MembershipPlan>,
     @InjectModel(Course.name) private courseModel: Model<Course>,
     @InjectModel(Lesson.name) private lessonModel: Model<Lesson>,
     @InjectModel(User.name) private userModel: Model<User>,
@@ -38,9 +39,15 @@ export class SeedService implements OnModuleInit {
       await this.seedCategories();
       const users = await this.seedUsers();
       await this.seedMembershipPlans();
-      const courseAndLesson = await this.seedCoursesAndLessons(users.instructor);
+      const courseAndLesson = await this.seedCoursesAndLessons(
+        users.instructor,
+      );
       await this.seedCenters();
-      await this.seedMockAnalyticsData(users.student, courseAndLesson.course, courseAndLesson.lesson);
+      await this.seedMockAnalyticsData(
+        users.student,
+        courseAndLesson.course,
+        courseAndLesson.lesson,
+      );
       this.logger.log('Database check/seeding completed successfully.');
     } catch (error) {
       this.logger.error('Failed to run database seeding scripts', error);
@@ -147,16 +154,22 @@ export class SeedService implements OnModuleInit {
 
   private async seedCoursesAndLessons(instructor: any) {
     const count = await this.courseModel.countDocuments();
-    let course = await this.courseModel.findOne({ slug: 'intro-to-nextjs-app-router-1234' });
-    const category = await this.categoryModel.findOne({ name: 'Web Development' });
+    let course = await this.courseModel.findOne({
+      slug: 'intro-to-nextjs-app-router-1234',
+    });
+    const category = await this.categoryModel.findOne({
+      name: 'Web Development',
+    });
 
     if (count === 0 && category) {
       this.logger.log('Seeding mock course with lessons...');
       course = await this.courseModel.create({
         slug: 'intro-to-nextjs-app-router-1234',
         title: 'Introduction to Next.js App Router',
-        description: 'Learn dynamic layouts, service worker caching strategies, and SEO meta controls inside Next.js 16/React 19.',
-        thumbnail: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=600&q=80',
+        description:
+          'Learn dynamic layouts, service worker caching strategies, and SEO meta controls inside Next.js 16/React 19.',
+        thumbnail:
+          'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=600&q=80',
         price: 29.99,
         discountPrice: 19.99,
         categoryId: category._id.toString(),
@@ -169,7 +182,8 @@ export class SeedService implements OnModuleInit {
         {
           courseId: course._id.toString(),
           title: 'Welcome to the Course & Project Setup',
-          content: 'In this lesson, we will cover the core architectural stack of Next.js 16 and structure our workspace directories.',
+          content:
+            'In this lesson, we will cover the core architectural stack of Next.js 16 and structure our workspace directories.',
           videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
           order: 1,
           duration: 8,
@@ -178,7 +192,8 @@ export class SeedService implements OnModuleInit {
         {
           courseId: course._id.toString(),
           title: 'Understanding Turbopack and Webpack Compiler Configs',
-          content: 'We will configure our app layout and resolve Turbopack configuration warnings when utilizing offline service worker generators.',
+          content:
+            'We will configure our app layout and resolve Turbopack configuration warnings when utilizing offline service worker generators.',
           videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ',
           order: 2,
           duration: 12,
@@ -192,8 +207,10 @@ export class SeedService implements OnModuleInit {
       await this.courseModel.create({
         slug: 'enterprise-backend-architecture-5678',
         title: 'Enterprise Backend Architecture with NestJS',
-        description: 'Design REST APIs, dependency injection patterns, Mongoose schemas, and route guards for large applications.',
-        thumbnail: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80',
+        description:
+          'Design REST APIs, dependency injection patterns, Mongoose schemas, and route guards for large applications.',
+        thumbnail:
+          'https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80',
         price: 49.99,
         categoryId: category._id.toString(),
         instructorId: instructor._id.toString(),
@@ -202,7 +219,9 @@ export class SeedService implements OnModuleInit {
       });
     }
 
-    const firstLesson = await this.lessonModel.findOne({ courseId: course?._id?.toString() });
+    const firstLesson = await this.lessonModel.findOne({
+      courseId: course?._id?.toString(),
+    });
     return { course, lesson: firstLesson };
   }
 
@@ -222,9 +241,7 @@ export class SeedService implements OnModuleInit {
     await this.centerModel.create({
       name: 'Suburban Study Circle',
       location: '44 Library Lane, West End',
-      classrooms: [
-        { name: 'Lab A', capacity: 10 },
-      ],
+      classrooms: [{ name: 'Lab A', capacity: 10 }],
     });
   }
 
@@ -232,7 +249,10 @@ export class SeedService implements OnModuleInit {
     if (!student || !course) return;
 
     // Enroll student in Course if not exists
-    const hasEnrollment = await this.enrollmentModel.findOne({ userId: student._id.toString(), courseId: course._id.toString() });
+    const hasEnrollment = await this.enrollmentModel.findOne({
+      userId: student._id.toString(),
+      courseId: course._id.toString(),
+    });
     if (!hasEnrollment) {
       this.logger.log('Seeding mock enrollment and review details...');
       await this.enrollmentModel.create({
@@ -245,12 +265,16 @@ export class SeedService implements OnModuleInit {
         userId: student._id.toString(),
         courseId: course._id.toString(),
         rating: 5,
-        comment: 'Very interactive sessions and the offline app is extremely responsive!',
+        comment:
+          'Very interactive sessions and the offline app is extremely responsive!',
       });
     }
 
     // Mock Order
-    const hasOrder = await this.orderModel.findOne({ userId: student._id.toString(), courseId: course._id.toString() });
+    const hasOrder = await this.orderModel.findOne({
+      userId: student._id.toString(),
+      courseId: course._id.toString(),
+    });
     if (!hasOrder) {
       this.logger.log('Seeding mock orders for revenue calculations...');
       await this.orderModel.create({
@@ -264,14 +288,18 @@ export class SeedService implements OnModuleInit {
 
     // Mock Assignment Submission
     if (lesson) {
-      const hasSubmission = await this.submissionModel.findOne({ userId: student._id.toString(), lessonId: lesson._id.toString() });
+      const hasSubmission = await this.submissionModel.findOne({
+        userId: student._id.toString(),
+        lessonId: lesson._id.toString(),
+      });
       if (!hasSubmission) {
         this.logger.log('Seeding mock assignment submission...');
         await this.submissionModel.create({
           userId: student._id.toString(),
           courseId: course._id.toString(),
           lessonId: lesson._id.toString(),
-          content: '```typescript\n// Strict mode check\nconst config: string = "Hello LearnLocal";\nconsole.log(config);\n```',
+          content:
+            '```typescript\n// Strict mode check\nconst config: string = "Hello LearnLocal";\nconsole.log(config);\n```',
           status: 'PENDING',
         });
       }

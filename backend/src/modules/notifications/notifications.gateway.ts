@@ -13,7 +13,9 @@ import { Logger } from '@nestjs/common';
     origin: '*',
   },
 })
-export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisconnect {
+export class NotificationsGateway
+  implements OnGatewayConnection, OnGatewayDisconnect
+{
   @WebSocketServer()
   server: Server;
 
@@ -49,7 +51,9 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
       client.join(userId);
       this.logger.log(`Client connected: user ${userId} (socket ${client.id})`);
     } catch (err) {
-      this.logger.warn(`Client connection rejected: JWT verification failed. ${err.message}`);
+      this.logger.warn(
+        `Client connection rejected: JWT verification failed. ${err.message}`,
+      );
       client.disconnect();
     }
   }

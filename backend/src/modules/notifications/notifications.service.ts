@@ -9,7 +9,8 @@ export class NotificationsService {
   private readonly logger = new Logger(NotificationsService.name);
 
   constructor(
-    @InjectModel(Notification.name) private notificationModel: Model<Notification>,
+    @InjectModel(Notification.name)
+    private notificationModel: Model<Notification>,
     private gateway: NotificationsGateway,
   ) {}
 
@@ -19,7 +20,9 @@ export class NotificationsService {
     message: string,
     type: string,
   ): Promise<Notification> {
-    this.logger.log(`Creating notification: [${type}] user=${userId} title=${title}`);
+    this.logger.log(
+      `Creating notification: [${type}] user=${userId} title=${title}`,
+    );
     const notification = await this.notificationModel.create({
       userId,
       title,
@@ -43,9 +46,16 @@ export class NotificationsService {
       .exec();
   }
 
-  async markAsRead(userId: string, notificationId: string): Promise<Notification | null> {
+  async markAsRead(
+    userId: string,
+    notificationId: string,
+  ): Promise<Notification | null> {
     return this.notificationModel
-      .findOneAndUpdate({ _id: notificationId, userId }, { read: true }, { new: true })
+      .findOneAndUpdate(
+        { _id: notificationId, userId },
+        { read: true },
+        { new: true },
+      )
       .exec();
   }
 

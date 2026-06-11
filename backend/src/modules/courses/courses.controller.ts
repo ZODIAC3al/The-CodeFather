@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards, Request } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
@@ -29,7 +40,10 @@ export class CoursesController {
   @Public()
   @Get('recommended')
   getRecommended(@Query('limit') limit?: number) {
-    return this.coursesService.getRecommended(undefined, limit ? Number(limit) : undefined);
+    return this.coursesService.getRecommended(
+      undefined,
+      limit ? Number(limit) : undefined,
+    );
   }
 
   @Public()
@@ -49,7 +63,11 @@ export class CoursesController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateCourseDto, @Request() req: any) {
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateCourseDto,
+    @Request() req: any,
+  ) {
     return this.coursesService.update(id, dto, req.user.sub, req.user.role);
   }
 
@@ -63,21 +81,43 @@ export class CoursesController {
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Post(':id/lessons')
-  createLesson(@Param('id') courseId: string, @Body() body: any, @Request() req: any) {
-    return this.coursesService.createLesson(courseId, body, req.user.sub, req.user.role);
+  createLesson(
+    @Param('id') courseId: string,
+    @Body() body: any,
+    @Request() req: any,
+  ) {
+    return this.coursesService.createLesson(
+      courseId,
+      body,
+      req.user.sub,
+      req.user.role,
+    );
   }
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Patch('lessons/:lessonId')
-  updateLesson(@Param('lessonId') lessonId: string, @Body() body: any, @Request() req: any) {
-    return this.coursesService.updateLesson(lessonId, body, req.user.sub, req.user.role);
+  updateLesson(
+    @Param('lessonId') lessonId: string,
+    @Body() body: any,
+    @Request() req: any,
+  ) {
+    return this.coursesService.updateLesson(
+      lessonId,
+      body,
+      req.user.sub,
+      req.user.role,
+    );
   }
 
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Delete('lessons/:lessonId')
   deleteLesson(@Param('lessonId') lessonId: string, @Request() req: any) {
-    return this.coursesService.deleteLesson(lessonId, req.user.sub, req.user.role);
+    return this.coursesService.deleteLesson(
+      lessonId,
+      req.user.sub,
+      req.user.role,
+    );
   }
 }

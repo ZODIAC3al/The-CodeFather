@@ -5,12 +5,17 @@ import { Review } from '../../schemas/review.schema';
 
 @Injectable()
 export class ReviewsService {
-  constructor(
-    @InjectModel(Review.name) private reviewModel: Model<Review>,
-  ) {}
+  constructor(@InjectModel(Review.name) private reviewModel: Model<Review>) {}
 
-  async createReview(userId: string, courseId: string, rating: number, comment?: string) {
-    const existing = await this.reviewModel.findOne({ userId, courseId } as any).exec();
+  async createReview(
+    userId: string,
+    courseId: string,
+    rating: number,
+    comment?: string,
+  ) {
+    const existing = await this.reviewModel
+      .findOne({ userId, courseId })
+      .exec();
     if (existing) {
       throw new ConflictException('You have already reviewed this course');
     }
@@ -25,7 +30,8 @@ export class ReviewsService {
   }
 
   async getCourseReviews(courseId: string) {
-    const reviews = await this.reviewModel.find({ courseId } as any)
+    const reviews = await this.reviewModel
+      .find({ courseId } as any)
       .populate('userId', 'id username avatar')
       .sort({ createdAt: -1 })
       .exec();

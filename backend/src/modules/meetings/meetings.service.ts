@@ -10,7 +10,8 @@ export class MeetingsService {
   ) {}
 
   async findAll() {
-    const list = await this.meetingModel.find()
+    const list = await this.meetingModel
+      .find()
       .populate('hostId', 'id username avatar')
       .sort({ startAt: 1 })
       .exec();
@@ -26,10 +27,11 @@ export class MeetingsService {
   }
 
   async findOne(id: string) {
-    const meeting = await this.meetingModel.findById(id)
+    const meeting = await this.meetingModel
+      .findById(id)
       .populate('hostId', 'id username avatar')
       .exec();
-    
+
     if (!meeting) throw new NotFoundException('Meeting not found');
 
     const obj = meeting.toObject();

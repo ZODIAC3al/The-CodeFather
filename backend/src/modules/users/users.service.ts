@@ -19,7 +19,12 @@ export class UsersService {
     return this.userModel.findById(id).select('-passwordHash').exec();
   }
 
-  async create(email: string, username: string, passwordHash: string, role: string = 'STUDENT') {
+  async create(
+    email: string,
+    username: string,
+    passwordHash: string,
+    role: string = 'STUDENT',
+  ) {
     const createdUser = new this.userModel({
       email,
       username,
@@ -29,18 +34,24 @@ export class UsersService {
     return createdUser.save();
   }
 
-  async updateProfile(id: string, data: { 
-    bio?: string; 
-    avatar?: string; 
-    email?: string; 
-    username?: string;
-    fullName?: string;
-    nickName?: string;
-    gender?: string;
-    country?: string;
-    language?: string;
-    timeZone?: string;
-  }) {
-    return this.userModel.findByIdAndUpdate(id, data, { new: true }).select('-passwordHash').exec();
+  async updateProfile(
+    id: string,
+    data: {
+      bio?: string;
+      avatar?: string;
+      email?: string;
+      username?: string;
+      fullName?: string;
+      nickName?: string;
+      gender?: string;
+      country?: string;
+      language?: string;
+      timeZone?: string;
+    },
+  ) {
+    return this.userModel
+      .findByIdAndUpdate(id, data, { new: true })
+      .select('-passwordHash')
+      .exec();
   }
 }

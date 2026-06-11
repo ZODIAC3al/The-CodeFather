@@ -1,7 +1,13 @@
-import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
+
+import {
+  ConflictException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+
 import { UsersService } from '../users/users.service';
 import { RegisterDto } from './dto/register.dto';
 
@@ -17,7 +23,9 @@ export class AuthService {
     const emailExists = await this.usersService.findOneByEmail(dto.email);
     if (emailExists) throw new ConflictException('Email already taken');
 
-    const usernameExists = await this.usersService.findOneByUsername(dto.username);
+    const usernameExists = await this.usersService.findOneByUsername(
+      dto.username,
+    );
     if (usernameExists) throw new ConflictException('Username already taken');
 
     const passwordHash = await bcrypt.hash(dto.password, 12);
@@ -31,8 +39,9 @@ export class AuthService {
   }
 
   async validateUser(username: string, password: string) {
-    const user = await this.usersService.findOneByUsername(username) || 
-                 await this.usersService.findOneByEmail(username);
+    const user =
+      (await this.usersService.findOneByUsername(username)) ||
+      (await this.usersService.findOneByEmail(username));
     if (!user) return null;
     const valid = await bcrypt.compare(password, user.passwordHash);
     return valid ? user : null;
@@ -60,7 +69,9 @@ export class AuthService {
       // Developer simulation mode — parse mock_google_<email> token
       const mockEmail = credential.replace('mock_google_', '');
       if (!mockEmail || !mockEmail.includes('@')) {
-        throw new UnauthorizedException('Invalid mock Google credential format');
+        throw new UnauthorizedException(
+          'Invalid mock Google credential format',
+        );
       }
       googleEmail = mockEmail;
       googleName = mockEmail.split('@')[0].replace(/[._]/g, ' ');
@@ -76,7 +87,7 @@ export class AuthService {
         if (!response.ok) {
           throw new UnauthorizedException('Google token verification failed');
         }
-        const payload = await response.json() as any;
+        const payload = await response.json();
 
         // Validate audience if client ID is configured
         if (googleClientId && payload.aud !== googleClientId) {
@@ -98,7 +109,7 @@ export class AuthService {
     }
 
     // Find existing user by email
-    let user = await this.usersService.findOneByEmail(googleEmail);
+    const user = await this.usersService.findOneByEmail(googleEmail);
 
     if (user) {
       // Update avatar if user doesn't have one
@@ -143,7 +154,11 @@ export class AuthService {
       avatar: googleAvatar,
     });
 
-    return this.generateTokens(newUser._id.toString(), newUser.username, newUser.role);
+    return this.generateTokens(
+      newUser._id.toString(),
+      newUser.username,
+      newUser.role,
+    );
   }
 
   private generateTokens(userId: string, username: string, role: string) {
@@ -151,7 +166,8 @@ export class AuthService {
     return {
       access_token: this.jwt.sign(payload),
       refresh_token: this.jwt.sign(payload, {
-        secret: this.config.get('JWT_REFRESH_SECRET') || 'default-refresh-secret',
+        secret:
+          this.config.get('JWT_REFRESH_SECRET') || 'default-refresh-secret',
         expiresIn: this.config.get('JWT_REFRESH_EXPIRES_IN') || '7d',
       }),
     };
