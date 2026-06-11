@@ -5,8 +5,8 @@ import { PaymentsController } from './payments.controller';
 import { Course, CourseSchema } from '../../schemas/course.schema';
 import { Order, OrderSchema } from '../../schemas/order.schema';
 import { Enrollment, EnrollmentSchema } from '../../schemas/enrollment.schema';
-
 import { User, UserSchema } from '../../schemas/user.schema';
+import { MembershipPlan, MembershipPlanSchema } from '../../schemas/membership-plan.schema';
 import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
@@ -16,6 +16,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
       { name: Order.name, schema: OrderSchema },
       { name: Enrollment.name, schema: EnrollmentSchema },
       { name: User.name, schema: UserSchema },
+      { name: MembershipPlan.name, schema: MembershipPlanSchema },
     ]),
     NotificationsModule,
   ],
