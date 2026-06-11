@@ -1,39 +1,40 @@
 'use client';
 
-import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '@/lib/api';
-import { useAuth } from '@/contexts/auth-context';
-import { useState, useEffect } from 'react';
-import { 
-  ArrowLeft, 
-  ChevronLeft, 
-  ChevronRight, 
-  CheckCircle2, 
-  Play, 
-  BookOpen, 
-  AlertCircle, 
-  Wifi, 
-  WifiOff, 
-  Calendar, 
-  Users, 
-  Star, 
-  Lock, 
-  FileText, 
-  Sparkles,
-  Save,
-  MessageSquare,
-  ThumbsUp,
-  Send,
-  Code,
-  Tag,
-  Hash,
-  UserCheck
+import {
+	AlertCircle,
+	ArrowLeft,
+	BookOpen,
+	Calendar,
+	CheckCircle2,
+	ChevronLeft,
+	ChevronRight,
+	Code,
+	FileText,
+	Hash,
+	Lock,
+	MessageSquare,
+	Play,
+	Save,
+	Send,
+	Sparkles,
+	Star,
+	Tag,
+	ThumbsUp,
+	UserCheck,
+	Users,
+	Wifi,
+	WifiOff,
 } from 'lucide-react';
 import { useLocale } from 'next-intl';
+import Link from 'next/link';
+import { useParams, useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+
+import Footer from '@/components/Footer';
+import Navbar from '@/components/Navbar';
+import { useAuth } from '@/contexts/auth-context';
+import { api } from '@/lib/api';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 export default function LessonView() {
   const params = useParams();
