@@ -9,6 +9,7 @@ import {
   ClipboardCheck,
   CreditCard,
   DollarSign,
+  FileText,
   HelpCircle,
   LayoutDashboard,
   MapPin,
@@ -54,6 +55,7 @@ const NAV_MENU = [
 
 const NAV_OTHERS = [
   { label: "payments", icon: CreditCard, href: "/admin/payments" },
+  { label: "enrollments", icon: FileText, href: "/admin/enrollments" },
   { label: "settings", icon: Settings, href: "/admin/settings" },
   { label: "help", icon: HelpCircle, href: "/admin/help" },
 ];

@@ -446,6 +446,7 @@
     "leaderboard": "Leaderboard",
     "analytics": "Analytics",
     "payments": "Payments",
+    "enrollments": "Enrollments",
     "settings": "Settings",
     "help": "Help",
     "superAdmin": "Super Admin",
@@ -593,6 +594,23 @@
       "message": "Message",
       "messagePlaceholder": "Describe your issue...",
       "sendTicket": "Send Ticket"
+    },
+    "enrollmentsPage": {
+      "title": "Enrollments",
+      "subtitle": "Student course enrollment records and progress",
+      "allEnrollments": "All Enrollments ({count})",
+      "student": "Student",
+      "course": "Course",
+      "progress": "Progress",
+      "enrolledAt": "Enrolled At",
+      "completed": "Completed",
+      "inProgress": "In Progress",
+      "noEnrollments": "No enrollments found",
+      "noEnrollmentsDesc": "No students have enrolled in courses yet."
+    },
+    "enrollments": {
+      "inProgress": "In Progress",
+      "completed": "Completed"
     }
   },
   "courseDetail": {

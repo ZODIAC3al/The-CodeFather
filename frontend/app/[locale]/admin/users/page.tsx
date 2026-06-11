@@ -10,7 +10,7 @@ import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { 
   LayoutDashboard, Users, BookOpen, Building2, Trophy, Activity, 
-  CreditCard, Settings, HelpCircle, ShieldCheck
+  CreditCard, Settings, HelpCircle, ShieldCheck, FileText
 } from 'lucide-react';
 
 const NAV_MENU = [
@@ -24,6 +24,7 @@ const NAV_MENU = [
 
 const NAV_OTHERS = [
   { label: 'payments', icon: CreditCard, href: '/admin/payments' },
+  { label: 'enrollments', icon: FileText, href: '/admin/enrollments' },
   { label: 'settings', icon: Settings, href: '/admin/settings' },
   { label: 'help', icon: HelpCircle, href: '/admin/help' },
 ];

@@ -5,6 +5,7 @@ import {
   BookOpen,
   Building2,
   CreditCard,
+  FileText,
   HelpCircle,
   LayoutDashboard,
   Menu,
@@ -36,6 +37,7 @@ const NAV_MENU = [
 
 const NAV_OTHERS = [
   { label: "payments", icon: CreditCard, href: "/admin/payments" },
+  { label: "enrollments", icon: FileText, href: "/admin/enrollments" },
   { label: "settings", icon: Settings, href: "/admin/settings" },
   { label: "help", icon: HelpCircle, href: "/admin/help" },
 ];

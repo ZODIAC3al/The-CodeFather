@@ -441,6 +441,7 @@
     "leaderboard": "لوحة الصدارة",
     "analytics": "التحليلات",
     "payments": "المدفوعات",
+    "enrollments": "التسجيلات",
     "settings": "الإعدادات",
     "help": "المساعدة",
     "superAdmin": "المدير العام",
@@ -588,6 +589,23 @@
       "message": "الرسالة",
       "messagePlaceholder": "صف مشكلتك...",
       "sendTicket": "إرسال التذكرة"
+    },
+    "enrollmentsPage": {
+      "title": "التسجيلات",
+      "subtitle": "سجلات تسجيل الطلاب في الدورات والتقدم الأكاديمي",
+      "allEnrollments": "جميع التسجيلات ({count})",
+      "student": "الطالب",
+      "course": "الدورة",
+      "progress": "التقدم",
+      "enrolledAt": "تاريخ التسجيل",
+      "completed": "مكتمل",
+      "inProgress": "قيد التقدم",
+      "noEnrollments": "لم يتم العثور على تسجيلات",
+      "noEnrollmentsDesc": "لم يسجل أي طلاب في دورات بعد."
+    },
+    "enrollments": {
+      "inProgress": "قيد التقدم",
+      "completed": "مكتمل"
     }
   },
   "courseDetail": {

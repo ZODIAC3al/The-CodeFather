@@ -140,4 +140,9 @@ export class AdminController {
   ) {
     return this.adminService.assignBlueprintToSlot(body);
   }
+
+  @Get('enrollments')
+  getAllEnrollments() {
+    return this.adminService.getAllEnrollments();
+  }
 }

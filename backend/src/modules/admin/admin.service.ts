@@ -396,4 +396,13 @@ export class AdminService {
   async getFaqs() {
     return this.faqModel.find().exec();
   }
+
+  async getAllEnrollments() {
+    return this.enrollmentModel
+      .find()
+      .populate('userId', 'id username email')
+      .populate('courseId', 'id title instructorId price')
+      .sort({ createdAt: -1 })
+      .exec();
+  }
 }
