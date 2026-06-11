@@ -473,6 +473,14 @@ export default function LessonView() {
                 {/* Notebook (Right) */}
                 <div className="card bg-base-100 p-6 rounded-3xl border border-base-300/80 shadow-md h-fit relative">
                   <div className="absolute top-4 right-4 flex items-center gap-2">
+                    <button
+                      onClick={exportNotebook}
+                      disabled={!offlineNotes.trim()}
+                      className="btn btn-xs btn-ghost text-[10px] font-bold gap-1"
+                      title="Export as Markdown"
+                    >
+                      <FileText className="w-3 h-3" /> Export
+                    </button>
                     {saveStatus === 'saving' && <span className="loading loading-spinner loading-xs text-primary"></span>}
                     {saveStatus === 'saved' && <span className="text-[10px] font-bold text-success flex items-center gap-0.5"><Save className="w-3 h-3" /> Saved</span>}
                   </div>
