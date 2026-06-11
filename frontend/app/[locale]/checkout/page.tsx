@@ -46,9 +46,11 @@ function CheckoutPage() {
   // Stripe checkout mutation
   const stripeMutation = useMutation({
     mutationFn: async () => {
-      const payload: any = { courseId };
+      const payload: any = {};
+      if (courseId) payload.courseId = courseId;
       if (planId) payload.planId = planId;
-      const { data } = await api.post('/payments/checkout', payload);
+      const endpoint = planId ? '/payments/checkout-subscription' : '/payments/checkout';
+      const { data } = await api.post(endpoint, payload);
       return data;
     },
     onSuccess: (data) => {
