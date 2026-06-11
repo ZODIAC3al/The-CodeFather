@@ -52,6 +52,12 @@ export class CoursesController {
     return this.coursesService.findOne(slug);
   }
 
+  @Public()
+  @Get('by-id/:id')
+  findById(@Param('id') id: string) {
+    return this.coursesService.findById(id);
+  }
+
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('INSTRUCTOR', 'ADMIN')

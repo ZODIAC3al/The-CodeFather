@@ -63,7 +63,8 @@ export default function CourseDetail() {
 
   const enrollMutation = useMutation({
     mutationFn: async () => {
-      if (course?.price > 0) {
+      const price = Number(course?.price ?? course?.discountPrice ?? 0);
+      if (price > 0) {
         router.push(`/${locale}/checkout?courseId=${course.id || course._id}`);
         return;
       }
@@ -212,20 +213,26 @@ export default function CourseDetail() {
                 </div>
               </div>
 
-              {/* Purchase Card Body */}
-              <div className="p-6 space-y-6">
-                <div className="flex items-baseline gap-3">
-                  <span className="text-3xl font-black text-base-content">
-                    {course.price === 0 ? 'Free' : `$${course.price}`}
-                  </span>
-                  {course.price > 0 && (
-                    <>
-                      <span className="text-sm line-through text-base-content/50 font-bold">$99.99</span>
-                      <span className="badge badge-success text-[10px] font-black uppercase text-success-content">50% OFF</span>
-                    </>
-                  )}
-                </div>
-                <div className="text-xs font-bold text-error animate-pulse flex items-center gap-1">
+{/* Purchase Card Body */}
+               <div className="p-6 space-y-6">
+                 <div className="flex items-baseline gap-3">
+                   <span className="text-3xl font-black text-base-content">
+                     {(() => {
+                       const price = Number(course?.price ?? course?.discountPrice ?? 0);
+                       return price === 0 ? 'Free' : `$${price.toFixed(2)}`;
+                     })()}
+                   </span>
+                   {(() => {
+                     const price = Number(course?.price ?? course?.discountPrice ?? 0);
+                     return price > 0 && (
+                       <>
+                         <span className="text-sm line-through text-base-content/50 font-bold">$99.99</span>
+                         <span className="badge badge-success text-[10px] font-black uppercase text-success-content">50% OFF</span>
+                       </>
+                     );
+                   })()}
+                 </div>
+                 <div className="text-xs font-bold text-error animate-pulse flex items-center gap-1">
                   <Clock className="w-3.5 h-3.5" /> 10-hours left at this price!
                 </div>
 
@@ -241,13 +248,16 @@ export default function CourseDetail() {
                     <Play className="w-4 h-4 fill-white text-white" /> Resume Curriculum
                   </Link>
                 ) : (
-                  <button
-                    onClick={handleEnroll}
-                    disabled={enrollMutation.isPending}
-                    className="btn btn-primary w-full rounded-2xl font-bold py-3 text-white flex justify-center items-center gap-2 shadow-lg shadow-primary/20 hover:shadow-primary/45"
-                  >
-                    {enrollMutation.isPending ? 'Processing...' : course.price === 0 ? 'Enroll for Free' : 'Buy Now'}
-                  </button>
+<button
+                     onClick={handleEnroll}
+                     disabled={enrollMutation.isPending}
+                     className="btn btn-primary w-full rounded-2xl font-bold py-3 text-white flex justify-center items-center gap-2 shadow-lg shadow-primary/20 hover:shadow-primary/45"
+                   >
+                     {enrollMutation.isPending ? 'Processing...' : (() => {
+                       const price = Number(course?.price ?? course?.discountPrice ?? 0);
+                       return price === 0 ? 'Enroll for Free' : 'Buy Now';
+                     })()}
+                   </button>
                 )}
 
                 {/* Inclusions */}
