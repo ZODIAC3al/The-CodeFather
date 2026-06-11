@@ -184,9 +184,40 @@ export default function LessonView() {
     setOfflineNotes(text);
     setSaveStatus('saving');
     localStorage.setItem(`lesson_notes_${lessonId}`, text);
+    
+    // Save to backend notebook
+    if (isAuthenticated && course?.id) {
+      saveNotebookMutation.mutate({
+        courseId: course.id || course._id,
+        lessonId: currentLesson?.id || currentLesson?._id,
+        title: `Notes for ${currentLesson?.title || 'Lesson'}`,
+        content: text,
+        type: 'notes',
+      });
+    }
+    
     setTimeout(() => {
       setSaveStatus('saved');
     }, 600);
+  };
+
+  // Notebook save mutation
+  const saveNotebookMutation = useMutation({
+    mutationFn: async (entry: { courseId: string; lessonId?: string; title: string; content: string; type: string }) => {
+      const { data } = await api.post('/notebook', entry);
+      return data;
+    },
+  });
+
+  // Notebook export to markdown
+  const exportNotebook = () => {
+    const markdown = `# ${currentLesson?.title || 'Lesson Notes'}\n\n${offlineNotes}\n\n---\n*Exported from The Codefather*\n`;
+    const blob = new Blob([markdown], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `notes-${lessonId}-${Date.now()}.md`;
+    a.click();
   };
 
   const handleBooking = () => {
