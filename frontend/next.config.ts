@@ -25,6 +25,21 @@ const nextConfig: NextConfig = {
       { hostname: 'images.unsplash.com' },
       { hostname: 'localhost' },
     ],
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 31536000,
+    dangerouslyAllowSVG: true,
+  },
+  experimental: {
+    optimizePackageImports: ['lucide-react', 'react-icons', 'recharts'],
+  },
+  compress: true,
+  poweredByHeader: false,
+  reactStrictMode: true,
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+  httpAgentOptions: {
+    keepAlive: true,
   },
 };
 

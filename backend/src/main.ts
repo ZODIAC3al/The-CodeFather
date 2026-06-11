@@ -1,6 +1,8 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import compression from 'compression';
+import helmet from 'helmet';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -12,9 +14,13 @@ async function bootstrap() {
         process.env.FRONTEND_URL,
         'http://localhost:3000',
         'http://localhost:3001',
-        'https://codeefather.netlify.app'
+        'https://codeefather.netlify.app',
       ].filter(Boolean) as string[];
-      if (!origin || allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes('*')) {
+      if (
+        !origin ||
+        allowedOrigins.indexOf(origin) !== -1 ||
+        allowedOrigins.includes('*')
+      ) {
         callback(null, true);
       } else {
         callback(new Error('Not allowed by CORS'));
@@ -23,9 +29,20 @@ async function bootstrap() {
     credentials: true,
   });
 
-  app.useGlobalPipes(
-    new ValidationPipe({ whitelist: true, transform: true }),
-  );
+  app.use(compression());
+  app.use(helmet({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false,
+  }));
+
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+
+  app.use((req, res, next) => {
+    if (req.method === 'GET') {
+      res.set('Cache-Control', 'public, max-age=300, s-maxage=3600');
+    }
+    next();
+  });
 
   const config = new DocumentBuilder()
     .setTitle('LearnLocal API')
