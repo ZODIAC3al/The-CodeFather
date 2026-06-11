@@ -15,3 +15,4 @@ export * from './submission.schema';
 export * from './message.schema';
 export * from './notification.schema';
 export * from './settings.schema';
+export * from './notebook-entry.schema';

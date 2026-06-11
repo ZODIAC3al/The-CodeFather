@@ -13,6 +13,7 @@ import { InstructorModule } from './modules/instructor/instructor.module';
 import { MeetingsModule } from './modules/meetings/meetings.module';
 import { MembershipsModule } from './modules/memberships/memberships.module';
 import { MessagesModule } from './modules/messages/messages.module';
+import { NotebookModule } from './modules/notebook/notebook.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { SearchModule } from './modules/search/search.module';

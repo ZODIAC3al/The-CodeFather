@@ -1,8 +1,10 @@
-import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import compression from 'compression';
 import helmet from 'helmet';
+
+import { ValidationPipe } from '@nestjs/common';
+import { NestFactory } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+
 import { AppModule } from './app.module';
 
 async function bootstrap() {
@@ -15,11 +17,14 @@ async function bootstrap() {
         'http://localhost:3000',
         'http://localhost:3001',
         'https://codeefather.netlify.app',
+        'https://the-code-father-iota.vercel.app',
+        'https://thecodefather.vercel.app',
+        '',
       ].filter(Boolean) as string[];
       if (
         !origin ||
         allowedOrigins.indexOf(origin) !== -1 ||
-        allowedOrigins.includes('*')
+        allowedOrigins.some(o => origin && origin.startsWith(o))
       ) {
         callback(null, true);
       } else {
@@ -30,10 +35,12 @@ async function bootstrap() {
   });
 
   app.use(compression());
-  app.use(helmet({
-    contentSecurityPolicy: false,
-    crossOriginEmbedderPolicy: false,
-  }));
+  app.use(
+    helmet({
+      contentSecurityPolicy: false,
+      crossOriginEmbedderPolicy: false,
+    }),
+  );
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
