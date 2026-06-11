@@ -11,35 +11,40 @@ const server = express();
 server.use('/payments/webhook', express.raw({ type: '*/*' }));
 
 export const bootstrap = async () => {
-  const app = await NestFactory.create(AppModule, new ExpressAdapter(server));
+  try {
+    const app = await NestFactory.create(AppModule, new ExpressAdapter(server));
 
-  app.enableCors({
-    origin: (origin, callback) => {
-      const allowedOrigins = [
-        process.env.FRONTEND_URL,
-        'http://localhost:3000',
-        'http://localhost:3001',
-        'https://codeefather.netlify.app',
-        'https://the-code-father-iota.vercel.app',
-        'https://thecodefather.vercel.app',
-      ].filter(Boolean) as string[];
-      if (
-        !origin ||
-        allowedOrigins.indexOf(origin) !== -1 ||
-        allowedOrigins.some(o => origin && origin.startsWith(o))
-      ) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
-    credentials: true,
-  });
+    app.enableCors({
+      origin: (origin, callback) => {
+        const allowedOrigins = [
+          process.env.FRONTEND_URL,
+          'http://localhost:3000',
+          'http://localhost:3001',
+          'https://codeefather.netlify.app',
+          'https://the-code-father-iota.vercel.app',
+          'https://thecodefather.vercel.app',
+        ].filter(Boolean) as string[];
+        if (
+          !origin ||
+          allowedOrigins.indexOf(origin) !== -1 ||
+          allowedOrigins.some(o => origin && origin.startsWith(o))
+        ) {
+          callback(null, true);
+        } else {
+          callback(new Error('Not allowed by CORS'));
+        }
+      },
+      credentials: true,
+    });
 
-  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+    app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
-  await app.init();
-  return server;
+    await app.init();
+    return server;
+  } catch (err: any) {
+    console.error('Bootstrap error:', err);
+    throw err;
+  }
 };
 
 let cachedHandler: any;
