@@ -16,6 +16,10 @@ export class MembershipsService {
     return this.membershipPlanModel.find().exec();
   }
 
+  async findOnePlan(id: string) {
+    return this.membershipPlanModel.findById(id).exec();
+  }
+
   async getMyMembership(userId: string) {
     const mem = await this.membershipModel
       .findOne({ userId })

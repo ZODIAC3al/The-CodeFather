@@ -33,6 +33,10 @@ function GroupJoinPage() {
     },
     onSuccess: (data: any) => {
       if (data?.alreadyEnrolled) return;
+      if (data?.enrolled && groupData?.courseId) {
+        const courseId = typeof groupData.courseId === 'object' ? groupData.courseId._id : groupData.courseId;
+        router.push(`/${locale}/courses/${courseId}/lessons/${groupData.courseId?.lessons?.[0]?._id || groupData.courseId?.lessons?.[0]?.id || ''}`);
+      }
     },
   });
 
@@ -93,18 +97,18 @@ function GroupJoinPage() {
             You've been invited to join a group enrollment for: <strong>{courseTitle}</strong>
           </p>
 
-          <div className="p-4 bg-base-200/50 rounded-2xl border border-base-300/50 max-w-lg mx-auto mb-6 text-left">
-            <div className="text-xs font-semibold text-base-content/60 space-y-2">
-              <div className="flex justify-between">
-                <span>Enrollment Type:</span>
-                <span className="font-bold text-base-content">Team Access</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Unit Price:</span>
-                <span className="font-bold text-base-content">${groupData.amount}</span>
-              </div>
-            </div>
-          </div>
+<div className="p-4 bg-base-200/50 rounded-2xl border border-base-300/50 max-w-lg mx-auto mb-6 text-left">
+             <div className="text-xs font-semibold text-base-content/60 space-y-2">
+               <div className="flex justify-between">
+                 <span>Enrollment Type:</span>
+                 <span className="font-bold text-base-content">Team Access</span>
+               </div>
+               <div className="flex justify-between">
+                 <span>Unit Price:</span>
+                 <span className="font-bold text-base-content">${Number(groupData.amount || 0).toFixed(2)}</span>
+               </div>
+             </div>
+           </div>
 
           <button
             onClick={handleJoin}

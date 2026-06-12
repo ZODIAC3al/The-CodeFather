@@ -41,11 +41,12 @@ function CheckoutPage() {
     queryKey: ['itemForCheckout', courseId || planId],
     queryFn: async () => {
       if (courseId) {
-        // Find by ID first (for checkout), then fallback to slug
-        const { data } = await api.get(`/courses/${courseId}`);
+        const isObjectId = /^[0-9a-fA-F]{24}$/.test(courseId);
+        const endpoint = isObjectId ? `/courses/by-id/${courseId}` : `/courses/${courseId}`;
+        const { data } = await api.get(endpoint);
         return { ...data, type: 'course' };
       } else if (planId) {
-        const { data } = await api.get(`/membership/plans/${planId}`);
+        const { data } = await api.get(`/memberships/plans/${planId}`);
         return { ...data, type: 'plan' };
       }
       return null;
@@ -156,7 +157,7 @@ const paypalMutation = useMutation({
 
 const itemName =
      item?.type === "plan" ? `${item.name} Subscription` : item?.title;
-   const unitPrice = item?.type === "plan" ? item.price : item?.price || item?.discountPrice;
+   const unitPrice = Number(item?.type === "plan" ? item.price : (item?.discountPrice ?? item?.price ?? 0));
    const totalPrice = unitPrice * quantity;
 
   return (
@@ -341,20 +342,20 @@ const itemName =
                 )}
 
 <button
-                   type="submit"
-                   disabled={
-                     stripeMutation.isPending || paypalMutation.isPending
-                   }
-                   className="btn-premium w-full py-4 rounded-xl font-bold mt-8 shadow-lg shadow-primary/20 hover:shadow-primary/40 flex justify-center items-center gap-2"
-                 >
-                   {stripeMutation.isPending || paypalMutation.isPending ? (
-                     <span className="loading loading-spinner loading-sm"></span>
-                   ) : (
-                     <>
-                       <Lock className="w-4 h-4" /> Pay ${totalPrice} securely
-                     </>
-                   )}
-                 </button>
+                    type="submit"
+                    disabled={
+                      stripeMutation.isPending || paypalMutation.isPending
+                    }
+                    className="btn-premium w-full py-4 rounded-xl font-bold mt-8 shadow-lg shadow-primary/20 hover:shadow-primary/40 flex justify-center items-center gap-2"
+                  >
+                    {stripeMutation.isPending || paypalMutation.isPending ? (
+                      <span className="loading loading-spinner loading-sm"></span>
+                    ) : (
+                      <>
+                        <Lock className="w-4 h-4" /> Pay ${(totalPrice || 0).toFixed(2)} securely
+                      </>
+                    )}
+                  </button>
               </form>
             </div>
           </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useQueryClient, useMutation } from '@tanstack/react-query';
+import { useQueryClient, useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import Navbar from '@/components/Navbar';
 import { useLocale } from 'next-intl';
@@ -18,12 +18,14 @@ function MembershipSuccessPage() {
   const sessionId = searchParams.get('session_id');
   const paypalReturn = searchParams.get('paypal_return');
 
-  const { data: plan } = useMutation({
-    mutationFn: async () => {
+  const { data: plan, isLoading: isPlanLoading } = useQuery({
+    queryKey: ['membershipPlan', planId],
+    queryFn: async () => {
       if (!planId) return null;
-      const { data } = await api.get(`/membership/plans/${planId}`);
+      const { data } = await api.get(`/memberships/plans/${planId}`);
       return data;
     },
+    enabled: !!planId,
   });
 
   useEffect(() => {
@@ -49,35 +51,35 @@ function MembershipSuccessPage() {
           <h1 className="text-3xl sm:text-4xl font-extrabold text-base-content mb-3 tracking-tight">
             Subscription Activated!
           </h1>
-          <p className="text-base-content/70 max-w-md mx-auto mb-8 font-medium">
-            Your membership has been successfully activated. You now have access to all premium features.
-          </p>
+<p className="text-base-content/70 max-w-md mx-auto mb-8 font-medium">
+             Your membership has been successfully activated. You now have access to all premium features.
+           </p>
 
-          {plan && (
-            <div className="p-6 bg-base-200/50 rounded-2xl border border-base-300/50 max-w-lg mx-auto mb-8 text-left space-y-4">
-              <div className="flex gap-4">
-                <div className="w-16 h-16 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20">
-                  <ShieldCheck className="w-8 h-8 text-primary" />
-                </div>
-                <div>
-                  <span className="text-xs font-bold text-primary tracking-wider uppercase">Subscription Plan</span>
-                  <h4 className="font-bold text-base-content text-sm leading-tight mt-0.5">{plan.name}</h4>
-                  <span className="text-xs text-base-content/50 font-medium">${plan.price}/{plan.interval === 'month' ? 'month' : 'year'}</span>
-                </div>
-              </div>
+           {plan && !isPlanLoading && (
+             <div className="p-6 bg-base-200/50 rounded-2xl border border-base-300/50 max-w-lg mx-auto mb-8 text-left space-y-4">
+               <div className="flex gap-4">
+                 <div className="w-16 h-16 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20">
+                   <ShieldCheck className="w-8 h-8 text-primary" />
+                 </div>
+                 <div>
+                   <span className="text-xs font-bold text-primary tracking-wider uppercase">Subscription Plan</span>
+                   <h4 className="font-bold text-base-content text-sm leading-tight mt-0.5">{plan.name}</h4>
+                   <span className="text-xs text-base-content/50 font-medium">${Number(plan.price || 0).toFixed(2)}/{plan.interval === 'month' ? 'month' : 'year'}</span>
+                 </div>
+               </div>
 
-              <div className="pt-4 border-t border-base-300/50 text-xs font-semibold text-base-content/60 space-y-2">
-                <div className="flex justify-between">
-                  <span>Status</span>
-                  <span className="badge badge-success text-[10px] font-black uppercase tracking-wider text-success-content px-2 py-1">ACTIVE</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Order ID</span>
-                  <span className="font-mono text-base-content font-bold">{sessionId?.slice(0, 18) || 'paypal_order'}...</span>
-                </div>
-              </div>
-            </div>
-          )}
+               <div className="pt-4 border-t border-base-300/50 text-xs font-semibold text-base-content/60 space-y-2">
+                 <div className="flex justify-between">
+                   <span>Status</span>
+                   <span className="badge badge-success text-[10px] font-black uppercase tracking-wider text-success-content px-2 py-1">ACTIVE</span>
+                 </div>
+                 <div className="flex justify-between">
+                   <span>Order ID</span>
+                   <span className="font-mono text-base-content font-bold">{sessionId?.slice(0, 18) || 'paypal_order'}...</span>
+                 </div>
+               </div>
+             </div>
+           )}
 
           <div className="flex flex-col sm:flex-row justify-center gap-4 max-w-md mx-auto">
             <button

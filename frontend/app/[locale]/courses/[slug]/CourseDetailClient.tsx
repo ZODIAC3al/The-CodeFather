@@ -57,7 +57,7 @@ const enrollMutation = useMutation({
          router.push(`/${locale}/checkout/purchase?courseId=${course.id || course._id}&type=individual`);
          return;
        }
-       const { data } = await api.post('/enrollments', { courseId: course?.id || course?._id });
+       const { data } = await api.post('/enrollments/enroll', { courseId: course?.id || course?._id });
        return data;
      },
     onSuccess: () => {

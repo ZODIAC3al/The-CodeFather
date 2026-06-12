@@ -130,4 +130,10 @@ export class PaymentsController {
       .populate('courseId')
       .lean();
   }
+
+  @Public()
+  @Get('course/:id')
+  getCourseById(@Param('id') id: string) {
+    return this.paymentsService.getCourseById(id);
+  }
 }

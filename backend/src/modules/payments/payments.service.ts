@@ -491,4 +491,19 @@ export class PaymentsService {
     await this.enrollmentModel.create({ userId, courseId: order.courseId });
     return { order, enrolled: true };
   }
+
+  async getCourseById(id: string) {
+    const course = await this.courseModel.findById(id)
+      .populate('instructorId', 'id username avatar bio')
+      .populate('categoryId')
+      .exec();
+    if (!course) return null;
+    const obj = course.toObject();
+    return {
+      ...obj,
+      id: course._id.toString(),
+      instructor: obj.instructorId,
+      category: obj.categoryId,
+    };
+  }
 }

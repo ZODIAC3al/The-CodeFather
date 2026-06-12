@@ -157,6 +157,31 @@ export class CoursesService {
     };
   }
 
+  async findById(id: string) {
+    const course = await this.courseModel
+      .findOne({ _id: id })
+      .populate('instructorId', 'id username avatar bio')
+      .populate('categoryId')
+      .exec();
+
+    if (!course) return null;
+
+    const lessons = await this.lessonModel
+      .find({ courseId: course._id.toString() })
+      .sort({ order: 1 })
+      .exec();
+    const obj = course.toObject();
+    return {
+      ...obj,
+      id: course._id.toString(),
+      instructor: obj.instructorId,
+      category: obj.categoryId,
+      lessons: lessons.map((l) => ({ ...l.toObject(), id: l._id.toString() })),
+      reviews: [],
+      _count: { enrollments: 0 },
+    };
+  }
+
   async create(dto: CreateCourseDto, instructorId: string) {
     const slug =
       dto.title

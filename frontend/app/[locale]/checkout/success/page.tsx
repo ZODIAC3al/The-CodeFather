@@ -21,7 +21,9 @@ function CheckoutSuccess() {
     queryKey: ['courseSuccessDetail', courseId],
     queryFn: async () => {
       if (!courseId) return null;
-      const { data } = await api.get(`/courses/${courseId}`);
+      const isObjectId = /^[0-9a-fA-F]{24}$/.test(courseId);
+      const endpoint = isObjectId ? `/courses/by-id/${courseId}` : `/courses/${courseId}`;
+      const { data } = await api.get(endpoint);
       return data;
     },
     enabled: !!courseId,

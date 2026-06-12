@@ -23,15 +23,18 @@ function PurchasePage() {
     queryKey: ["courseForPurchase", courseId],
     queryFn: async () => {
       if (!courseId) return null;
-      const { data } = await api.get(`/courses/${courseId}`);
+      const isObjectId = /^[0-9a-fA-F]{24}$/.test(courseId);
+      const endpoint = isObjectId ? `/courses/by-id/${courseId}` : `/courses/${courseId}`;
+      const { data } = await api.get(endpoint);
       return data;
     },
     enabled: !!courseId,
   });
 
-  const price = Number(course?.price ?? course?.discountPrice ?? 0);
-  const originalPrice = Number(course?.price ?? price);
-  const totalPrice = price * quantity;
+const price = Number(course?.discountPrice ?? course?.price ?? 0);
+   const originalPrice = Number(course?.price ?? course?.discountPrice ?? price);
+   const totalPrice = price * quantity;
+   const hasDiscount = course?.discountPrice && course?.discountPrice < course?.price;
 
   const handleProceedToCheckout = () => {
     if (!isAuthenticated) {

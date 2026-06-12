@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  Param,
   Post,
   Body,
   UseGuards,
@@ -20,6 +21,12 @@ export class MembershipsController {
   @Get('plans')
   findAllPlans() {
     return this.membershipsService.findAllPlans();
+  }
+
+  @Public()
+  @Get('plans/:id')
+  findOnePlan(@Param('id') id: string) {
+    return this.membershipsService.findOnePlan(id);
   }
 
   @ApiBearerAuth()

@@ -181,24 +181,28 @@ export function NotificationsProvider({
     [queryClient, dismissToast],
   );
 
-  // WebSocket
-  useEffect(() => {
-    if (!isAuthenticated || !user) return;
+// WebSocket
+   useEffect(() => {
+     if (!isAuthenticated || !user) return;
 
-    const token = localStorage.getItem("access_token");
-    const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+     const token = localStorage.getItem("access_token");
+     const baseUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 
-    const socket: Socket = io(baseUrl, {
-      auth: { token },
-      transports: ["websocket"],
-    });
+     const socket: Socket = io(baseUrl, {
+       auth: { token },
+       transports: ["websocket", "polling"],
+     });
 
-    socket.on("notification", handleIncoming);
+     socket.on("connect_error", (err) => {
+       console.warn("Socket connection failed (expected on serverless):", err.message);
+     });
 
-    return () => {
-      socket.disconnect();
-    };
-  }, [isAuthenticated, user, handleIncoming]);
+     socket.on("notification", handleIncoming);
+
+     return () => {
+       socket.disconnect();
+     };
+   }, [isAuthenticated, user, handleIncoming]);
 
   // Mark single read
   const readMutation = useMutation({
