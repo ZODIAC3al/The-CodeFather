@@ -1,12 +1,12 @@
 'use client';
 
 import Navbar from '@/components/Navbar';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { Zap, Users, Award, ShieldCheck, Sparkles } from 'lucide-react';
+import { Zap, Users, Award, ShieldCheck, Sparkles, ArrowRight } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import Footer from '@/components/Footer';
 
@@ -44,7 +44,6 @@ const PLAN_ICONS: Record<string, React.ElementType> = {
 export default function Membership() {
   const { isAuthenticated } = useAuth();
   const router = useRouter();
-  const queryClient = useQueryClient();
   const locale = useLocale();
   const t = useTranslations('membership');
 
@@ -62,7 +61,6 @@ export default function Membership() {
   ];
 
   const [isYearly, setIsYearly] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
 
   const { data: dbPlans, isLoading: isPlansLoading } = useQuery({
     queryKey: ['membershipPlans'],
@@ -81,25 +79,12 @@ export default function Membership() {
     enabled: isAuthenticated,
   });
 
-  const subscribeMutation = useMutation({
-    mutationFn: async (planId: string) => {
-      const { data } = await api.post('/memberships/subscribe', { planId });
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['myMembership'] });
-      setMessage('Successfully subscribed! Welcome to Premium.');
-      setTimeout(() => setMessage(null), 5000);
-    },
-    onError: (err: any) => {
-      setMessage(err.response?.data?.message || 'Failed to subscribe');
-      setTimeout(() => setMessage(null), 5000);
-    }
-  });
-
   const handleSubscribe = (planId: string) => {
-    if (!isAuthenticated) { router.push(`/${locale}/login`); return; }
-    subscribeMutation.mutate(planId);
+    if (!isAuthenticated) {
+      router.push(`/${locale}/login?callbackUrl=/membership`);
+      return;
+    }
+    router.push(`/${locale}/checkout?planId=${planId}`);
   };
 
   // Displayed plans: filter by billing toggle
@@ -145,12 +130,6 @@ export default function Membership() {
             </div>
           </div>
         </div>
-
-        {message && (
-          <div className="mb-8 p-4 bg-primary/10 text-primary rounded-xl font-bold text-center border border-primary/20">
-            {message}
-          </div>
-        )}
 
         {isPlansLoading ? (
           <div className="flex justify-center my-20">
@@ -203,24 +182,18 @@ export default function Membership() {
                         </div>
 
                         <div className="flex items-center gap-3">
-                          {isActive ? (
-                            <button disabled className="btn btn-ghost px-6 rounded-xl font-bold text-sm bg-base-200 text-base-content/50 cursor-not-allowed flex items-center gap-2">
-                              <ShieldCheck className="w-4 h-4" /> {t('currentPlan')}
-                            </button>
-                          ) : (
-                            <>
-                              <button
-                                onClick={() => handleSubscribe(planId)}
-                                disabled={subscribeMutation.isPending}
-                                className="btn btn-neutral px-6 rounded-xl font-bold text-sm"
-                              >
-                                {subscribeMutation.isPending ? t('processing') : t('startDeploying')}
-                              </button>
-                              <button className="btn btn-ghost px-4 rounded-xl font-bold text-sm text-base-content/70">
-                                {t('getDemo')}
-                              </button>
-                            </>
-                          )}
+{isActive ? (
+                             <button disabled className="btn btn-ghost px-6 rounded-xl font-bold text-sm bg-base-200 text-base-content/50 cursor-not-allowed flex items-center gap-2">
+                               <ShieldCheck className="w-4 h-4" /> {t('currentPlan')}
+                             </button>
+                           ) : (
+                             <button
+                               onClick={() => handleSubscribe(planId)}
+                               className="btn btn-neutral px-6 rounded-xl font-bold text-sm flex items-center gap-2"
+                             >
+                               {t('startDeploying')} <ArrowRight className="w-4 h-4" />
+                             </button>
+                           )}
                         </div>
                       </div>
 
