@@ -3,9 +3,8 @@ import CourseDetailClient from './CourseDetailClient';
 
 export async function generateStaticParams() {
   try {
-    const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/courses`
-    );
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://the-code-father-iota.vercel.app';
+    const res = await fetch(`${baseUrl}/courses`);
     if (!res.ok) return [];
     const data = await res.json();
     const courses = data.data || [];
