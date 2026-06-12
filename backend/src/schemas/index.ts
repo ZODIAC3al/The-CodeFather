@@ -16,3 +16,7 @@ export * from './message.schema';
 export * from './notification.schema';
 export * from './settings.schema';
 export * from './notebook-entry.schema';
+export * from './quiz.schema';
+export * from './study-group.schema';
+export * from './schedule.schema';
+export * from './certificate.schema';

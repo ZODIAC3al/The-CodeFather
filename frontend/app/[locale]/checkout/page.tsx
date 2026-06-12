@@ -352,7 +352,7 @@ const paypalMutation = useMutation({
                     <span className="loading loading-spinner loading-sm"></span>
                   ) : (
                     <>
-                      <Lock className="w-4 h-4" /> {t('paySecurely').replace('${amount}', (totalPrice || 0).toFixed(2))}
+                      <Lock className="w-4 h-4" /> {t('paySecurely', { amount: (totalPrice || 0).toFixed(2) })}
                     </>
                   )}
                 </button>

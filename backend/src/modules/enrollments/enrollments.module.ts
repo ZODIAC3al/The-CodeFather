@@ -6,6 +6,7 @@ import { Enrollment, EnrollmentSchema } from '../../schemas/enrollment.schema';
 import { Course, CourseSchema } from '../../schemas/course.schema';
 import { Order, OrderSchema } from '../../schemas/order.schema';
 import { Membership, MembershipSchema } from '../../schemas/membership.schema';
+import { Certificate, CertificateSchema } from '../../schemas/certificate.schema';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { Membership, MembershipSchema } from '../../schemas/membership.schema';
       { name: Course.name, schema: CourseSchema },
       { name: Order.name, schema: OrderSchema },
       { name: Membership.name, schema: MembershipSchema },
+      { name: Certificate.name, schema: CertificateSchema },
     ]),
   ],
   controllers: [EnrollmentsController],

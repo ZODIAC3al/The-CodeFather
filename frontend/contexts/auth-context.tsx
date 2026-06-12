@@ -16,6 +16,11 @@ interface User {
   country?: string;
   language?: string;
   timeZone?: string;
+  xp?: number;
+  level?: number;
+  badges?: string[];
+  streak?: number;
+  lastActiveDate?: string | Date;
 }
 
 interface AuthContextType {

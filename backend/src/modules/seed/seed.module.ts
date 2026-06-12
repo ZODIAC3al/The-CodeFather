@@ -15,6 +15,8 @@ import { Meeting, MeetingSchema } from '../../schemas/meeting.schema';
 import { Enrollment, EnrollmentSchema } from '../../schemas/enrollment.schema';
 import { Review, ReviewSchema } from '../../schemas/review.schema';
 import { Order, OrderSchema } from '../../schemas/order.schema';
+import { Quiz, QuizSchema } from '../../schemas/quiz.schema';
+import { StudyGroup, StudyGroupSchema } from '../../schemas/study-group.schema';
 
 @Module({
   imports: [
@@ -30,6 +32,8 @@ import { Order, OrderSchema } from '../../schemas/order.schema';
       { name: Enrollment.name, schema: EnrollmentSchema },
       { name: Review.name, schema: ReviewSchema },
       { name: Order.name, schema: OrderSchema },
+      { name: Quiz.name, schema: QuizSchema },
+      { name: StudyGroup.name, schema: StudyGroupSchema },
     ]),
   ],
   providers: [SeedService],

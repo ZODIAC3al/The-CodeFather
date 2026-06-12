@@ -4,6 +4,7 @@ import {
   Post,
   Patch,
   Body,
+  Param,
   UseGuards,
   Request,
 } from '@nestjs/common';
@@ -51,5 +52,10 @@ export class EnrollmentsController {
       courseId,
       progress,
     );
+  }
+
+  @Get('courses/:id/certificate')
+  getCertificate(@Param('id') courseId: string, @Request() req: any) {
+    return this.enrollmentsService.getCertificate(req.user.sub, courseId);
   }
 }

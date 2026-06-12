@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  Post,
   Patch,
   Body,
   UseGuards,
@@ -21,9 +22,20 @@ export class UsersController {
 
   @Get('me')
   async getMe(@Request() req: any) {
+    await this.usersService.updateStreak(req.user.sub);
     const user = await this.usersService.findById(req.user.sub);
     if (!user) throw new NotFoundException('User not found');
     return user;
+  }
+
+  @Get('leaderboard')
+  async getLeaderboard() {
+    return this.usersService.getLeaderboard();
+  }
+
+  @Post('me/earn-xp')
+  async earnXp(@Request() req: any, @Body() body: { amount: number }) {
+    return this.usersService.earnXp(req.user.sub, body.amount || 10);
   }
 
   @Patch('profile')

@@ -12,6 +12,8 @@ import { Meeting } from '../../schemas/meeting.schema';
 import { Enrollment } from '../../schemas/enrollment.schema';
 import { Review } from '../../schemas/review.schema';
 import { Order } from '../../schemas/order.schema';
+import { Quiz } from '../../schemas/quiz.schema';
+import { StudyGroup } from '../../schemas/study-group.schema';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
@@ -31,6 +33,8 @@ export class SeedService implements OnModuleInit {
     @InjectModel(Enrollment.name) private enrollmentModel: Model<Enrollment>,
     @InjectModel(Review.name) private reviewModel: Model<Review>,
     @InjectModel(Order.name) private orderModel: Model<Order>,
+    @InjectModel(Quiz.name) private quizModel: Model<Quiz>,
+    @InjectModel(StudyGroup.name) private studyGroupModel: Model<StudyGroup>,
   ) {}
 
   async onModuleInit() {
@@ -48,6 +52,7 @@ export class SeedService implements OnModuleInit {
         courseAndLesson.course,
         courseAndLesson.lesson,
       );
+      await this.seedQuizzesAndGroups();
       this.logger.log('Database check/seeding completed successfully.');
     } catch (error) {
       this.logger.error('Failed to run database seeding scripts', error);
@@ -188,6 +193,11 @@ export class SeedService implements OnModuleInit {
           order: 1,
           duration: 8,
           isFree: true,
+          resources: [
+            { name: 'Course_Syllabus.pdf', type: 'pdf', url: 'https://example.com/syllabus.pdf' },
+            { name: 'Project_Boilerplate.zip', type: 'code', url: 'https://example.com/boilerplate.zip' },
+            { name: 'Introduction_Slides.pdf', type: 'slides', url: 'https://example.com/slides.pdf' }
+          ]
         },
         {
           courseId: course._id.toString(),
@@ -198,6 +208,10 @@ export class SeedService implements OnModuleInit {
           order: 2,
           duration: 12,
           isFree: false,
+          resources: [
+            { name: 'Turbopack_Deep_Dive.pdf', type: 'pdf', url: 'https://example.com/turbopack.pdf' },
+            { name: 'Compiler_Configurations.zip', type: 'code', url: 'https://example.com/configs.zip' }
+          ]
         },
       ];
 
@@ -301,6 +315,58 @@ export class SeedService implements OnModuleInit {
           content:
             '```typescript\n// Strict mode check\nconst config: string = "Hello LearnLocal";\nconsole.log(config);\n```',
           status: 'PENDING',
+        });
+      }
+    }
+  }
+
+  private async seedQuizzesAndGroups() {
+    this.logger.log('Seeding mock quizzes and study circles...');
+    const lessons = await this.lessonModel.find().exec();
+    for (const lesson of lessons) {
+      const existingQuiz = await this.quizModel.findOne({ lessonId: lesson._id.toString() });
+      if (!existingQuiz) {
+        await this.quizModel.create({
+          lessonId: lesson._id.toString(),
+          questions: [
+            {
+              questionText: `Which is a key architecture concept of ${lesson.title}?`,
+              options: ['Strict Types Compilation', 'Monolithic Routing', 'Client-side Local Hydration', 'Single-threaded Callbacks'],
+              correctAnswerIndex: 0,
+            },
+            {
+              questionText: `What benefit does ${lesson.title} introduce in performance?`,
+              options: ['Optimized bundle sizes', 'Increased payload latency', 'Synchronous thread locks', 'Shared state mutations'],
+              correctAnswerIndex: 0,
+            },
+            {
+              questionText: `How should you manage code configurations for ${lesson.title}?`,
+              options: ['Declarative environments config', 'Inline variables scope', 'Dynamic database polling', 'Static global memory'],
+              correctAnswerIndex: 0,
+            }
+          ]
+        });
+      }
+    }
+
+    const courses = await this.courseModel.find().exec();
+    for (const course of courses) {
+      const existingGroup = await this.studyGroupModel.findOne({ courseId: course._id.toString() });
+      if (!existingGroup) {
+        await this.studyGroupModel.create({
+          name: `${course.title} Study Circle`,
+          description: `Collaborative study classroom group for sharing worksheets and solutions in ${course.title}.`,
+          courseId: course._id.toString(),
+          createdBy: 'default_seeder',
+          members: [],
+          chat: [
+            { username: 'john_mentor', avatar: '', content: `Welcome to the ${course.title} Study Circle!`, createdAt: new Date() },
+            { username: 'bob_student', avatar: '', content: `Excited to collaborate and check out the dynamic layout resources here!`, createdAt: new Date() }
+          ],
+          resources: [
+            { name: 'Complete_Boilerplate.zip', type: 'code', url: 'https://example.com/boilerplate.zip' },
+            { name: 'Syllabus_Mindmap.pdf', type: 'pdf', url: 'https://example.com/syllabus.pdf' }
+          ]
         });
       }
     }

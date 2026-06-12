@@ -23,6 +23,16 @@ export class Lesson extends Document {
 
   @Prop({ default: false })
   isFree: boolean;
+
+  @Prop({
+    type: [{
+      name: String,
+      type: { type: String, enum: ['pdf', 'code', 'slides'] },
+      url: String,
+    }],
+    default: [],
+  })
+  resources: Array<{ name: string; type: string; url: string }>;
 }
 
 export const LessonSchema = SchemaFactory.createForClass(Lesson);

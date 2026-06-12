@@ -41,6 +41,21 @@ export class User extends Document {
 
   @Prop({ default: false })
   suspended: boolean;
+
+  @Prop({ default: 0 })
+  xp: number;
+
+  @Prop({ default: 1 })
+  level: number;
+
+  @Prop({ type: [String], default: [] })
+  badges: string[];
+
+  @Prop({ default: 0 })
+  streak: number;
+
+  @Prop()
+  lastActiveDate?: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

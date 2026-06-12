@@ -5,6 +5,7 @@ import { Enrollment } from '../../schemas/enrollment.schema';
 import { Course } from '../../schemas/course.schema';
 import { Order } from '../../schemas/order.schema';
 import { Membership } from '../../schemas/membership.schema';
+import { Certificate } from '../../schemas/certificate.schema';
 
 @Injectable()
 export class EnrollmentsService {
@@ -13,6 +14,7 @@ export class EnrollmentsService {
     @InjectModel(Course.name) private courseModel: Model<Course>,
     @InjectModel(Order.name) private orderModel: Model<Order>,
     @InjectModel(Membership.name) private membershipModel: Model<Membership>,
+    @InjectModel(Certificate.name) private certificateModel: Model<Certificate>,
   ) {}
 
   async enroll(userId: string, courseId: string) {
@@ -89,7 +91,7 @@ export class EnrollmentsService {
   }
 
   async updateProgress(userId: string, courseId: string, progress: number) {
-    return this.enrollmentModel
+    const updated = await this.enrollmentModel
       .findOneAndUpdate(
         { userId, courseId },
         {
@@ -98,6 +100,28 @@ export class EnrollmentsService {
         },
         { new: true },
       )
+      .exec();
+
+    if (progress >= 100) {
+      const existingCert = await this.certificateModel.findOne({ userId, courseId });
+      if (!existingCert) {
+        const credentialId = 'CF-' + Math.random().toString(36).substring(2, 10).toUpperCase() + '-' + Date.now().toString().slice(-4);
+        await new this.certificateModel({
+          userId,
+          courseId,
+          credentialId,
+        }).save();
+      }
+    }
+
+    return updated;
+  }
+
+  async getCertificate(userId: string, courseId: string) {
+    return this.certificateModel
+      .findOne({ userId, courseId })
+      .populate('courseId', 'title description')
+      .populate('userId', 'username fullName')
       .exec();
   }
 }
