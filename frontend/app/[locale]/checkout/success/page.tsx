@@ -6,8 +6,8 @@ import { api } from '@/lib/api';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useLocale } from 'next-intl';
-import { CheckCircle2, PlayCircle, Receipt, ArrowRight, ShieldCheck } from 'lucide-react';
-import { Suspense } from 'react';
+import { CheckCircle2, PlayCircle, Receipt, ArrowRight, ShieldCheck, Users, Copy } from 'lucide-react';
+import { Suspense, useState } from 'react';
 
 function CheckoutSuccess() {
   const searchParams = useSearchParams();
@@ -26,6 +26,30 @@ function CheckoutSuccess() {
     },
     enabled: !!courseId,
   });
+
+  // Fetch order details for group token
+  const { data: order } = useQuery({
+    queryKey: ['orderSuccessDetail', sessionId],
+    queryFn: async () => {
+      if (!sessionId) return null;
+      const { data } = await api.get(`/payments/orders/${sessionId}`);
+      return data;
+    },
+    enabled: !!sessionId,
+    retry: false,
+  });
+
+  const [copied, setCopied] = useState(false);
+  const groupToken = order?.groupToken;
+
+  const copyGroupLink = () => {
+    if (groupToken) {
+      const link = `${window.location.origin}/${locale}/join/group?token=${groupToken}`;
+      navigator.clipboard.writeText(link);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -76,20 +100,46 @@ function CheckoutSuccess() {
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-base-300/50 text-xs font-semibold text-base-content/60 space-y-2">
-                <div className="flex justify-between">
-                  <span className="flex items-center gap-1"><Receipt className="w-3.5 h-3.5 text-base-content/40" /> Order ID:</span>
-                  <span className="font-mono text-base-content font-bold">{sessionId?.slice(0, 18)}...</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="flex items-center gap-1"><ShieldCheck className="w-3.5 h-3.5 text-success" /> Status:</span>
-                  <span className="badge badge-success text-[10px] font-black uppercase tracking-wider text-success-content px-2 py-1">PAID</span>
-                </div>
-              </div>
-            </div>
-          )}
+<div className="pt-4 border-t border-base-300/50 text-xs font-semibold text-base-content/60 space-y-2">
+                 <div className="flex justify-between">
+                   <span className="flex items-center gap-1"><Receipt className="w-3.5 h-3.5 text-base-content/40" /> Order ID:</span>
+                   <span className="font-mono text-base-content font-bold">{sessionId?.slice(0, 18)}...</span>
+                 </div>
+                 <div className="flex justify-between">
+                   <span className="flex items-center gap-1"><ShieldCheck className="w-3.5 h-3.5 text-success" /> Status:</span>
+                   <span className="badge badge-success text-[10px] font-black uppercase tracking-wider text-success-content px-2 py-1">PAID</span>
+                 </div>
+               </div>
+             </div>
+           )}
 
-          <div className="flex flex-col sm:flex-row justify-center gap-4 max-w-md mx-auto">
+           {groupToken && (
+             <div className="p-4 bg-base-200/50 rounded-2xl border border-base-300/50 max-w-lg mx-auto mb-6 text-center">
+               <div className="flex items-center justify-center gap-2 mb-2">
+                 <Users className="w-4 h-4 text-primary" />
+                 <span className="text-xs font-bold text-primary uppercase tracking-wider">Group Enrollment</span>
+               </div>
+               <p className="text-xs text-base-content/70 mb-3">
+                 Share this link with your team to grant them access to this course
+               </p>
+               <div className="flex gap-2">
+                 <input
+                   type="text"
+                   readOnly
+                   value={`${typeof window !== 'undefined' ? window.location.origin : ''}/${locale}/join/group?token=${groupToken}`}
+                   className="input input-xs flex-1 font-mono text-xs"
+                 />
+                 <button
+                   onClick={copyGroupLink}
+                   className="btn btn-xs btn-primary font-bold"
+                 >
+                   {copied ? "Copied!" : <Copy className="w-3.5 h-3.5" />}
+                 </button>
+               </div>
+             </div>
+           )}
+
+           <div className="flex flex-col sm:flex-row justify-center gap-4 max-w-md mx-auto">
             <button
               onClick={() => router.push(`/${locale}/courses/${courseSlug}/lessons`)}
               className="btn-premium flex-grow py-4 rounded-xl font-bold flex justify-center items-center gap-2 shadow-lg shadow-primary/20 hover:shadow-primary/40 cursor-pointer"

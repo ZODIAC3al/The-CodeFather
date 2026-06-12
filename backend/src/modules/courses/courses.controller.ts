@@ -1,24 +1,25 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Patch,
-  Delete,
   Body,
+  Controller,
+  Delete,
+  Get,
   Param,
+  Patch,
+  Post,
   Query,
-  UseGuards,
   Request,
+  UseGuards,
 } from '@nestjs/common';
-import { CoursesService } from './courses.service';
-import { CreateCourseDto } from './dto/create-course.dto';
-import { UpdateCourseDto } from './dto/update-course.dto';
-import { CourseFilterDto } from './dto/course-filter.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+
 import { Public } from '../../common/decorators/public.decorator';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { RolesGuard } from '../../common/guards/roles.guard';
-import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CoursesService } from './courses.service';
+import { CourseFilterDto } from './dto/course-filter.dto';
+import { CreateCourseDto } from './dto/create-course.dto';
+import { UpdateCourseDto } from './dto/update-course.dto';
 
 @ApiTags('courses')
 @Controller('courses')
@@ -50,12 +51,6 @@ export class CoursesController {
   @Get(':slug')
   findOne(@Param('slug') slug: string) {
     return this.coursesService.findOne(slug);
-  }
-
-  @Public()
-  @Get('by-id/:id')
-  findById(@Param('id') id: string) {
-    return this.coursesService.findById(id);
   }
 
   @ApiBearerAuth()

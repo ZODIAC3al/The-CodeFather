@@ -81,7 +81,11 @@ export class PaymentsService {
     return data.access_token;
   }
 
-  async createCheckoutSession(userId: string, itemId: string, accessType: 'SINGLE' | 'SUBSCRIPTION' = 'SINGLE') {
+  private generateGroupToken(): string {
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  }
+
+  async createCheckoutSession(userId: string, itemId: string, accessType: 'SINGLE' | 'GROUP' | 'SUBSCRIPTION' = 'SINGLE', quantity: number = 1) {
     const frontendUrl =
       this.config.get('FRONTEND_URL') || 'http://localhost:3000';
 
@@ -146,6 +150,7 @@ export class PaymentsService {
     if (!course) throw new Error('Course not found');
 
     const price = Number(course.discountPrice ?? course.price);
+    const totalAmount = price * quantity;
 
     if (this.stripe) {
       try {
@@ -156,27 +161,30 @@ export class PaymentsService {
               price_data: {
                 currency: 'usd',
                 product_data: {
-                  name: course.title,
+                  name: quantity > 1 ? `${course.title} (Team of ${quantity})` : course.title,
                   images: course.thumbnail ? [course.thumbnail] : [],
                 },
                 unit_amount: Math.round(price * 100),
               },
-              quantity: 1,
+              quantity: quantity,
             },
           ],
           mode: 'payment',
-          success_url: `${frontendUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}&course_id=${itemId}`,
+          success_url: `${frontendUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}&course_id=${itemId}&quantity=${quantity}`,
           cancel_url: `${frontendUrl}/courses/${course.slug}`,
-          metadata: { userId, courseId: itemId, accessType },
+          metadata: { userId, courseId: itemId, accessType, quantity: quantity.toString() },
         });
 
+        const groupToken = accessType === 'GROUP' ? this.generateGroupToken() : undefined;
         await this.orderModel.create({
           userId,
           courseId: itemId,
-          amount: price,
+          amount: totalAmount,
           status: 'PENDING',
           stripeId: session.id,
           accessType,
+          quantity,
+          groupToken,
         });
 
         return { url: session.url };
@@ -189,13 +197,16 @@ export class PaymentsService {
     }
 
     const orderId = `mock_order_${Date.now()}`;
+    const groupToken = accessType === 'GROUP' ? this.generateGroupToken() : undefined;
     await this.orderModel.create({
       userId,
       courseId: itemId,
-      amount: price,
+      amount: totalAmount,
       status: 'PAID',
       stripeId: orderId,
       accessType,
+      quantity,
+      groupToken,
       authorizationExpiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     });
 
@@ -205,16 +216,16 @@ export class PaymentsService {
     } catch {}
 
     return {
-      url: `${frontendUrl}/checkout/success?session_id=${orderId}&course_id=${itemId}`,
+      url: `${frontendUrl}/checkout/success?session_id=${orderId}&course_id=${itemId}&quantity=${quantity}`,
     };
   }
 
-  async createPayPalOrder(userId: string, courseId?: string, planId?: string, accessType: 'SINGLE' | 'SUBSCRIPTION' = 'SINGLE') {
+  async createPayPalOrder(userId: string, courseId?: string, planId?: string, accessType: 'SINGLE' | 'GROUP' | 'SUBSCRIPTION' = 'SINGLE', quantity: number = 1) {
     const frontendUrl = this.config.get('FRONTEND_URL') || 'http://localhost:3000';
     let itemName: string;
     let price: number;
 
-    if (accessType === 'SUBSCRIPTION' && planId) {
+    if (planId) {
       const plan = await this.planModel.findById(planId);
       if (!plan) throw new Error('Membership plan not found');
       itemName = plan.name;
@@ -222,11 +233,13 @@ export class PaymentsService {
     } else if (courseId) {
       const course = await this.courseModel.findById(courseId);
       if (!course) throw new Error('Course not found');
-      itemName = course.title;
+      itemName = quantity > 1 ? `${course.title} (Team of ${quantity})` : course.title;
       price = Number(course.discountPrice ?? course.price);
     } else {
       throw new Error('Either courseId or planId is required');
     }
+
+    const totalAmount = price * quantity;
 
     const base = this.getPayPalApiBase();
     const accessToken = await this.getPayPalToken();
@@ -238,7 +251,7 @@ export class PaymentsService {
           description: itemName,
           amount: {
             currency_code: 'USD',
-            value: price.toFixed(2),
+            value: totalAmount.toFixed(2),
           },
         },
       ],
@@ -246,7 +259,7 @@ export class PaymentsService {
         brand_name: 'The Codefather',
         landing_page: 'BILLING',
         user_action: 'PAY_NOW',
-        return_url: `${frontendUrl}/checkout/success?paypal_return=true`,
+        return_url: `${frontendUrl}/checkout/success?paypal_return=true&course_id=${courseId || ''}&quantity=${quantity}`,
         cancel_url: `${frontendUrl}/membership`,
       },
     };
@@ -269,15 +282,18 @@ export class PaymentsService {
     const order = await res.json();
     const orderId = order.id;
 
-    const orderDoc = await this.orderModel.create({
+    const groupToken = accessType === 'GROUP' ? this.generateGroupToken() : undefined;
+    await this.orderModel.create({
       userId,
-      courseId: accessType === 'SINGLE' ? courseId : undefined,
+      courseId: accessType !== 'SUBSCRIPTION' ? courseId : undefined,
       planId: accessType === 'SUBSCRIPTION' ? planId : undefined,
-      amount: price,
+      amount: totalAmount,
       status: 'AUTHORIZED',
       paypalOrderId: orderId,
       paypalAuthorizationId: `auth_${orderId}`,
       accessType,
+      quantity,
+      groupToken,
       authorizationExpiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     });
 
@@ -370,7 +386,7 @@ export class PaymentsService {
       );
       if (event.type === 'checkout.session.completed') {
         const session = event.data.object;
-        const { userId, courseId, planId, accessType } = session.metadata as any;
+        const { userId, courseId, planId, accessType, quantity } = session.metadata as any;
 
         await this.orderModel.updateMany(
           { stripeId: session.id },
@@ -455,5 +471,24 @@ export class PaymentsService {
     } catch (err) {
       this.logger.error('Failed to trigger purchase notifications', err);
     }
+  }
+
+  async getGroupByToken(token: string) {
+    const order = await this.orderModel.findOne({ groupToken: token, status: 'PAID' })
+      .populate('courseId')
+      .lean();
+    if (!order) return null;
+    return order;
+  }
+
+  async joinGroupByToken(token: string, userId: string) {
+    const order = await this.orderModel.findOne({ groupToken: token, status: 'PAID' });
+    if (!order || !order.courseId) return null;
+
+    const existingEnrollment = await this.enrollmentModel.findOne({ userId, courseId: order.courseId });
+    if (existingEnrollment) return { alreadyEnrolled: true, order };
+
+    await this.enrollmentModel.create({ userId, courseId: order.courseId });
+    return { order, enrolled: true };
   }
 }

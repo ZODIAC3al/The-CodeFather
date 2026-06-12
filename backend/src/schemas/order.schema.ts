@@ -35,7 +35,16 @@ export class Order extends Document {
   authorizationExpiry?: Date;
 
   @Prop({ default: 'SINGLE' })
-  accessType: 'SINGLE' | 'SUBSCRIPTION';
+  accessType: 'SINGLE' | 'SUBSCRIPTION' | 'GROUP';
+
+  @Prop({ type: Number, default: 1 })
+  quantity: number;
+
+  @Prop({ type: [{ type: String, ref: 'Enrollment' }], default: [] })
+  enrollments: string[];
+
+  @Prop({ type: String })
+  groupToken?: string;
 }
 
 export const OrderSchema = SchemaFactory.createForClass(Order);

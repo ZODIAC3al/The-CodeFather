@@ -20,6 +20,7 @@ function CheckoutPage() {
   const searchParams = useSearchParams();
   const courseId = searchParams.get("courseId");
   const planId = searchParams.get("planId");
+  const preselectedAccessType = searchParams.get("accessType") as "SINGLE" | "GROUP" | null;
   const router = useRouter();
   const locale = useLocale();
   const { isAuthenticated } = useAuth();
@@ -30,8 +31,9 @@ function CheckoutPage() {
   const [cvc, setCvc] = useState("");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<"card" | "paypal">("card");
+  const [quantity, setQuantity] = useState(preselectedAccessType === "GROUP" ? 5 : 1);
 
-  const accessType = planId ? "SUBSCRIPTION" : "SINGLE";
+  const accessType = planId ? "SUBSCRIPTION" : (preselectedAccessType === "GROUP" ? "GROUP" : (quantity >= 5 ? "GROUP" : "SINGLE"));
   const t = useLocale();
 
 // Fetch the item being purchased
@@ -51,18 +53,20 @@ function CheckoutPage() {
     enabled: !!(courseId || planId),
   });
 
-  // Stripe checkout mutation
-  const stripeMutation = useMutation({
-    mutationFn: async () => {
-      const payload: any = {};
-      if (courseId) payload.courseId = courseId;
-      if (planId) payload.planId = planId;
-      const endpoint = planId
-        ? "/payments/checkout-subscription"
-        : "/payments/checkout";
-      const { data } = await api.post(endpoint, payload);
-      return data;
-    },
+// Stripe checkout mutation
+   const stripeMutation = useMutation({
+     mutationFn: async () => {
+       const payload: any = {};
+       if (courseId) payload.courseId = courseId;
+       if (planId) payload.planId = planId;
+       payload.accessType = accessType;
+       payload.quantity = quantity;
+       const endpoint = planId
+         ? "/payments/checkout-subscription"
+         : "/payments/checkout";
+       const { data } = await api.post(endpoint, payload);
+       return data;
+     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["myEnrollments"] });
       if (data && data.url) {
@@ -80,15 +84,16 @@ function CheckoutPage() {
   });
 
   // PayPal checkout mutation
-  const paypalMutation = useMutation({
-    mutationFn: async () => {
-      const { data } = await api.post("/payments/paypal/create-order", {
-        courseId: accessType === "SINGLE" ? courseId : undefined,
-        planId: accessType === "SUBSCRIPTION" ? planId : undefined,
-        accessType,
-      });
-      return data;
-    },
+const paypalMutation = useMutation({
+     mutationFn: async () => {
+       const { data } = await api.post("/payments/paypal/create-order", {
+         courseId: accessType !== "SUBSCRIPTION" ? courseId : undefined,
+         planId: accessType === "SUBSCRIPTION" ? planId : undefined,
+         accessType,
+         quantity,
+       });
+       return data;
+     },
     onSuccess: async (data) => {
       const approveLink = data.links?.find((l: any) => l.rel === "approve");
       if (approveLink) {
@@ -149,10 +154,10 @@ function CheckoutPage() {
     );
   }
 
-  const itemName =
-    item?.type === "plan" ? `${item.name} Subscription` : item?.title;
-  const price =
-    item?.type === "plan" ? item.price : item?.price || item?.discountPrice;
+const itemName =
+     item?.type === "plan" ? `${item.name} Subscription` : item?.title;
+   const unitPrice = item?.type === "plan" ? item.price : item?.price || item?.discountPrice;
+   const totalPrice = unitPrice * quantity;
 
   return (
     <div className="flex flex-col min-h-screen bg-base-200">
@@ -163,13 +168,15 @@ function CheckoutPage() {
           <h1 className="text-3xl font-extrabold text-base-content mb-2">
             Secure Checkout
           </h1>
-          <p className="text-base-content/60 font-medium">
-            Complete your purchase to unlock{" "}
-            {item?.type === "plan"
-              ? "subscription benefits"
-              : "the full curriculum"}
-            .
-          </p>
+<p className="text-base-content/60 font-medium">
+             Complete your purchase to unlock{" "}
+             {item?.type === "plan"
+               ? "subscription benefits"
+               : accessType === "GROUP"
+                 ? "team training access"
+                 : "the full curriculum"}
+             .
+           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
@@ -214,6 +221,29 @@ function CheckoutPage() {
               )}
 
               <form onSubmit={handleCheckout} className="space-y-6">
+                {item?.type === "course" && (
+                  <div>
+                    <label className="block text-xs font-bold text-base-content/80 uppercase tracking-wider mb-2">
+                      Number of Students
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <input
+                        type="number"
+                        min="1"
+                        max="100"
+                        value={quantity}
+                        onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                        className="input-premium w-24 font-mono"
+                      />
+                      <span className="text-sm text-base-content/60">
+                        {quantity >= 5 && (
+                          <span className="text-success font-medium">Team discount applied!</span>
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
                 {paymentMethod === "card" && (
                   <>
                     <div>
@@ -310,21 +340,21 @@ function CheckoutPage() {
                   </div>
                 )}
 
-                <button
-                  type="submit"
-                  disabled={
-                    stripeMutation.isPending || paypalMutation.isPending
-                  }
-                  className="btn-premium w-full py-4 rounded-xl font-bold mt-8 shadow-lg shadow-primary/20 hover:shadow-primary/40 flex justify-center items-center gap-2"
-                >
-                  {stripeMutation.isPending || paypalMutation.isPending ? (
-                    <span className="loading loading-spinner loading-sm"></span>
-                  ) : (
-                    <>
-                      <Lock className="w-4 h-4" /> Pay ${price} securely
-                    </>
-                  )}
-                </button>
+<button
+                   type="submit"
+                   disabled={
+                     stripeMutation.isPending || paypalMutation.isPending
+                   }
+                   className="btn-premium w-full py-4 rounded-xl font-bold mt-8 shadow-lg shadow-primary/20 hover:shadow-primary/40 flex justify-center items-center gap-2"
+                 >
+                   {stripeMutation.isPending || paypalMutation.isPending ? (
+                     <span className="loading loading-spinner loading-sm"></span>
+                   ) : (
+                     <>
+                       <Lock className="w-4 h-4" /> Pay ${totalPrice} securely
+                     </>
+                   )}
+                 </button>
               </form>
             </div>
           </div>
@@ -362,23 +392,34 @@ function CheckoutPage() {
                 </div>
               </div>
 
-              <div className="space-y-3 text-sm mb-6 pb-6 border-b border-base-300 font-medium text-base-content/80">
-                <div className="flex justify-between">
-                  <span>Original Price</span>
-                  <span>${price}</span>
-                </div>
-                <div className="flex justify-between text-success">
-                  <span>Discounts</span>
-                  <span>-$0.00</span>
-                </div>
-              </div>
+<div className="space-y-3 text-sm mb-6 pb-6 border-b border-base-300 font-medium text-base-content/80">
+                 <div className="flex justify-between">
+                   <span>{item?.type === "course" ? "Unit Price" : "Price"}</span>
+                   <span>${unitPrice}</span>
+                 </div>
+                 {quantity > 1 && (
+                   <div className="flex justify-between">
+                     <span>Quantity</span>
+                     <span>{quantity}</span>
+                   </div>
+                 )}
+                 <div className="flex justify-between text-success">
+                   <span>Discounts</span>
+                   <span>-$0.00</span>
+                 </div>
+               </div>
 
-              <div className="flex justify-between items-center mb-6">
-                <span className="font-bold text-base-content">Total</span>
-                <span className="text-2xl font-extrabold text-base-content">
-                  ${price}
-                </span>
-              </div>
+               <div className="flex justify-between items-center mb-6">
+                 <span className="font-bold text-base-content">Total</span>
+                 <span className="text-2xl font-extrabold text-base-content">
+                   ${totalPrice}
+                 </span>
+               </div>
+               {accessType === "GROUP" && (
+                 <p className="text-xs text-success text-center mt-2">
+                   Group enrollment: Share your purchase link to add team members after checkout
+                 </p>
+               )}
             </div>
 
             <div className="bg-base-100 rounded-3xl p-6 border border-base-300 shadow-sm flex items-start gap-4">

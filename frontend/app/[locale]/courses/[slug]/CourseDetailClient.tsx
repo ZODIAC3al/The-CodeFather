@@ -50,16 +50,16 @@ export default function CourseDetailClient({ course, locale }: CourseDetailClien
     (e: any) => e.courseId === course?.id || e.course?._id === course?.id
   );
 
-  const enrollMutation = useMutation({
-    mutationFn: async () => {
-      const price = Number(course?.price ?? course?.discountPrice ?? 0);
-      if (price > 0) {
-        router.push(`/${locale}/checkout?courseId=${course.id || course._id}`);
-        return;
-      }
-      const { data } = await api.post('/enrollments', { courseId: course?.id || course?._id });
-      return data;
-    },
+const enrollMutation = useMutation({
+     mutationFn: async () => {
+       const price = Number(course?.price ?? course?.discountPrice ?? 0);
+       if (price > 0) {
+         router.push(`/${locale}/checkout/purchase?courseId=${course.id || course._id}&type=individual`);
+         return;
+       }
+       const { data } = await api.post('/enrollments', { courseId: course?.id || course?._id });
+       return data;
+     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['myEnrollments'] });
       router.push(`/${locale}/courses/${slug}/lessons/${course.lessons?.[0]?.id || course.lessons?.[0]?._id}`);
@@ -224,10 +224,12 @@ export default function CourseDetailClient({ course, locale }: CourseDetailClien
                 </div>
 
                 <div className="space-y-4 pt-4 border-t border-base-300">
-                  <div className="text-xs font-bold text-center">
-                    <span className="text-base-content/50">Training 5 or more people?</span> <br />
-                    <Link href={lpUrl('/membership')} className="text-primary hover:underline">Get business plan</Link>
-                  </div>
+<div className="text-xs font-bold text-center space-y-2">
+                   <div className="text-base-content/50">Training 5 or more people?</div>
+                   <Link href={`/${locale}/checkout/purchase?courseId=${course.id || course._id}&type=group`} className="text-primary hover:underline font-bold block">
+                     Buy Team Training Access
+                   </Link>
+                 </div>
                   <div className="flex items-center justify-center gap-4 pt-1 border-t border-base-300/50">
                     <span className="text-xs font-bold text-base-content/50">Share:</span>
                     <div className="flex gap-2">
