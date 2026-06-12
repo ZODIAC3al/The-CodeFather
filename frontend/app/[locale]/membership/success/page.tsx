@@ -29,6 +29,11 @@ function MembershipSuccessPage() {
   });
 
   useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ['myEnrollments'] });
+    queryClient.invalidateQueries({ queryKey: ['myMembership'] });
+  }, [queryClient]);
+
+  useEffect(() => {
     if (paypalReturn || sessionId) {
       queryClient.invalidateQueries({ queryKey: ['myEnrollments'] });
     }

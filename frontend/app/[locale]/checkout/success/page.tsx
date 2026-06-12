@@ -1,13 +1,13 @@
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { useLocale } from 'next-intl';
 import { CheckCircle2, PlayCircle, Receipt, ArrowRight, ShieldCheck, Users, Copy } from 'lucide-react';
-import { Suspense, useState } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 
 function CheckoutSuccess() {
   const searchParams = useSearchParams();
@@ -15,6 +15,7 @@ function CheckoutSuccess() {
   const courseId = searchParams.get('course_id');
   const router = useRouter();
   const locale = useLocale();
+  const queryClient = useQueryClient();
 
   // Fetch course details
   const { data: course, isLoading } = useQuery({
@@ -40,6 +41,11 @@ function CheckoutSuccess() {
     enabled: !!sessionId,
     retry: false,
   });
+
+  // Invalidate enrollments on mount to refresh user's access
+  useEffect(() => {
+    queryClient.invalidateQueries({ queryKey: ['myEnrollments'] });
+  }, [queryClient]);
 
   const [copied, setCopied] = useState(false);
   const groupToken = order?.groupToken;
@@ -141,13 +147,22 @@ function CheckoutSuccess() {
              </div>
            )}
 
-           <div className="flex flex-col sm:flex-row justify-center gap-4 max-w-md mx-auto">
-            <button
-              onClick={() => router.push(`/${locale}/courses/${courseSlug}/lessons`)}
-              className="btn-premium flex-grow py-4 rounded-xl font-bold flex justify-center items-center gap-2 shadow-lg shadow-primary/20 hover:shadow-primary/40 cursor-pointer"
-            >
-              <PlayCircle className="w-5 h-5" /> Start Learning Now <ArrowRight className="w-4 h-4" />
-            </button>
+<div className="flex flex-col sm:flex-row justify-center gap-4 max-w-md mx-auto">
+             <button
+               onClick={() => {
+                 const firstLessonId = course?.lessons?.[0]?.id || course?.lessons?.[0]?._id;
+                 if (courseSlug && firstLessonId) {
+                   router.push(`/${locale}/courses/${courseSlug}/lessons/${firstLessonId}`);
+                 } else if (courseSlug) {
+                   router.push(`/${locale}/courses/${courseSlug}`);
+                 } else {
+                   router.push(`/${locale}/courses`);
+                 }
+               }}
+               className="btn-premium flex-grow py-4 rounded-xl font-bold flex justify-center items-center gap-2 shadow-lg shadow-primary/20 hover:shadow-primary/40 cursor-pointer"
+             >
+               <PlayCircle className="w-5 h-5" /> Start Learning Now <ArrowRight className="w-4 h-4" />
+             </button>
             <button
               onClick={() => router.push(`/${locale}/profile`)}
               className="btn btn-outline border-base-300/80 hover:bg-base-200 text-base-content font-bold px-6 py-4 rounded-xl cursor-pointer"
