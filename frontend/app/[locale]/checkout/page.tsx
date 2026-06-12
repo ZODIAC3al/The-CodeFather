@@ -7,7 +7,7 @@ import {
   Lock,
   ShieldCheck,
 } from "lucide-react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 
@@ -34,7 +34,7 @@ function CheckoutPage() {
   const [quantity, setQuantity] = useState(preselectedAccessType === "GROUP" ? 5 : 1);
 
   const accessType = planId ? "SUBSCRIPTION" : (preselectedAccessType === "GROUP" ? "GROUP" : (quantity >= 5 ? "GROUP" : "SINGLE"));
-  const t = useLocale();
+  const t = useTranslations("checkout");
 
 // Fetch the item being purchased
   const { data: item, isLoading } = useQuery({
@@ -142,23 +142,29 @@ const paypalMutation = useMutation({
         <div className="flex justify-center items-center flex-grow flex-col">
           <AlertCircle className="w-16 h-16 text-error mb-4 opacity-50" />
           <h1 className="text-2xl font-bold text-base-content mb-4">
-            Invalid Checkout Session
+            {t('invalidSession')}
           </h1>
           <button
             onClick={() => router.back()}
             className="btn btn-primary rounded-xl font-bold"
           >
-            Go Back
+            {t('goBack')}
           </button>
         </div>
       </div>
     );
   }
 
-const itemName =
-     item?.type === "plan" ? `${item.name} Subscription` : item?.title;
-   const unitPrice = Number(item?.type === "plan" ? item.price : (item?.discountPrice ?? item?.price ?? 0));
-   const totalPrice = unitPrice * quantity;
+  const itemName =
+    item?.type === "plan"
+      ? (locale === 'ar' && item.name === 'Monthly Pass'
+        ? 'الاشتراك الشهري'
+        : locale === 'ar' && item.name === 'Annual Pass'
+          ? 'الاشتراك السنوي'
+          : `${item.name} Subscription`)
+      : item?.title;
+  const unitPrice = Number(item?.type === "plan" ? item.price : (item?.discountPrice ?? item?.price ?? 0));
+  const totalPrice = unitPrice * quantity;
 
   return (
     <div className="flex flex-col min-h-screen bg-base-200">
@@ -167,17 +173,15 @@ const itemName =
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16 w-full flex-grow">
         <div className="text-center mb-12">
           <h1 className="text-3xl font-extrabold text-base-content mb-2">
-            Secure Checkout
+            {t('title')}
           </h1>
-<p className="text-base-content/60 font-medium">
-             Complete your purchase to unlock{" "}
-             {item?.type === "plan"
-               ? "subscription benefits"
-               : accessType === "GROUP"
-                 ? "team training access"
-                 : "the full curriculum"}
-             .
-           </p>
+          <p className="text-base-content/60 font-medium">
+            {item?.type === "plan"
+              ? (locale === 'ar' ? 'أكمل عملية الشراء لفتح ميزات الاشتراك.' : 'Complete your purchase to unlock subscription benefits.')
+              : accessType === "GROUP"
+                ? (locale === 'ar' ? 'أكمل عملية الشراء لفتح وصول تدريب الفريق.' : 'Complete your purchase to unlock team training access.')
+                : t('subtitle')}
+          </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
@@ -186,7 +190,7 @@ const itemName =
               <div className="flex items-center gap-3 mb-8 pb-6 border-b border-base-300">
                 <CreditCard className="w-6 h-6 text-primary" />
                 <h2 className="text-xl font-bold text-base-content">
-                  Payment Method
+                  {t('paymentDetails')}
                 </h2>
               </div>
 
@@ -197,19 +201,13 @@ const itemName =
                   onClick={() => setPaymentMethod("card")}
                   className={`join-item btn btn-sm font-bold ${paymentMethod === "card" ? "btn-primary text-primary-content" : "btn-ghost"}`}
                 >
-                  Credit Card
+                  {locale === 'ar' ? 'بطاقة الائتمان' : 'Credit Card'}
                 </button>
                 <button
                   type="button"
                   onClick={() => setPaymentMethod("paypal")}
                   className={`join-item btn btn-sm font-bold ${paymentMethod === "paypal" ? "btn-primary text-primary-content" : "btn-ghost"}`}
                 >
-                  <svg className="w-4 h-4 mr-1" viewBox="0 0 24 24" fill="none">
-                    <path
-                      d="M7.5 4.5H19.5V19.5C19.5 20.3284 18.8284 21 18 21H6C5.17157 21 4.5 20.3284 4.5 19.5V4.5H7.5V4.5Z"
-                      fill="currentColor"
-                    />
-                  </svg>
                   PayPal
                 </button>
               </div>
@@ -225,7 +223,7 @@ const itemName =
                 {item?.type === "course" && (
                   <div>
                     <label className="block text-xs font-bold text-base-content/80 uppercase tracking-wider mb-2">
-                      Number of Students
+                      {locale === 'ar' ? 'عدد الطلاب' : 'Number of Students'}
                     </label>
                     <div className="flex items-center gap-3">
                       <input
@@ -238,7 +236,9 @@ const itemName =
                       />
                       <span className="text-sm text-base-content/60">
                         {quantity >= 5 && (
-                          <span className="text-success font-medium">Team discount applied!</span>
+                          <span className="text-success font-medium">
+                            {locale === 'ar' ? 'تم تطبيق خصم الفريق!' : 'Team discount applied!'}
+                          </span>
                         )}
                       </span>
                     </div>
@@ -249,19 +249,19 @@ const itemName =
                   <>
                     <div>
                       <label className="block text-xs font-bold text-base-content/80 uppercase tracking-wider mb-2">
-                        Name on Card
+                        {t('nameOnCard')}
                       </label>
                       <input
                         type="text"
                         required
-                        placeholder="John Doe"
+                        placeholder={t('nameOnCardPlaceholder')}
                         className="input-premium w-full"
                       />
                     </div>
 
                     <div>
                       <label className="block text-xs font-bold text-base-content/80 uppercase tracking-wider mb-2">
-                        Card Number
+                        {t('cardNumber')}
                       </label>
                       <div className="relative">
                         <input
@@ -273,7 +273,7 @@ const itemName =
                               e.target.value.replace(/\D/g, "").slice(0, 16),
                             )
                           }
-                          placeholder="0000 0000 0000 0000"
+                          placeholder={t('cardNumberPlaceholder')}
                           className="input-premium w-full pl-10 tracking-widest font-mono"
                         />
                         <CreditCard className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-base-content/30" />
@@ -283,7 +283,7 @@ const itemName =
                     <div className="grid grid-cols-2 gap-6">
                       <div>
                         <label className="block text-xs font-bold text-base-content/80 uppercase tracking-wider mb-2">
-                          Expiry Date
+                          {t('expiryDate')}
                         </label>
                         <input
                           type="text"
@@ -292,13 +292,13 @@ const itemName =
                           onChange={(e) =>
                             setExpiry(e.target.value.slice(0, 5))
                           }
-                          placeholder="MM/YY"
+                          placeholder={t('expiryPlaceholder')}
                           className="input-premium w-full font-mono"
                         />
                       </div>
                       <div>
                         <label className="block text-xs font-bold text-base-content/80 uppercase tracking-wider mb-2">
-                          CVC
+                          {t('cvc')}
                         </label>
                         <input
                           type="text"
@@ -309,7 +309,7 @@ const itemName =
                               e.target.value.replace(/\D/g, "").slice(0, 4),
                             )
                           }
-                          placeholder="123"
+                          placeholder={t('cvcPlaceholder')}
                           className="input-premium w-full font-mono"
                         />
                       </div>
@@ -336,26 +336,26 @@ const itemName =
                       </svg>
                     </div>
                     <p className="text-base-content/70 font-medium">
-                      Click "Pay Now" to complete your purchase via PayPal
+                      {locale === 'ar' ? 'انقر فوق زر الدفع لإكمال عملية الشراء عبر PayPal' : 'Click the payment button to complete your purchase via PayPal'}
                     </p>
                   </div>
                 )}
 
-<button
-                    type="submit"
-                    disabled={
-                      stripeMutation.isPending || paypalMutation.isPending
-                    }
-                    className="btn-premium w-full py-4 rounded-xl font-bold mt-8 shadow-lg shadow-primary/20 hover:shadow-primary/40 flex justify-center items-center gap-2"
-                  >
-                    {stripeMutation.isPending || paypalMutation.isPending ? (
-                      <span className="loading loading-spinner loading-sm"></span>
-                    ) : (
-                      <>
-                        <Lock className="w-4 h-4" /> Pay ${(totalPrice || 0).toFixed(2)} securely
-                      </>
-                    )}
-                  </button>
+                <button
+                  type="submit"
+                  disabled={
+                    stripeMutation.isPending || paypalMutation.isPending
+                  }
+                  className="btn-premium w-full py-4 rounded-xl font-bold mt-8 shadow-lg shadow-primary/20 hover:shadow-primary/40 flex justify-center items-center gap-2"
+                >
+                  {stripeMutation.isPending || paypalMutation.isPending ? (
+                    <span className="loading loading-spinner loading-sm"></span>
+                  ) : (
+                    <>
+                      <Lock className="w-4 h-4" /> {t('paySecurely').replace('${amount}', (totalPrice || 0).toFixed(2))}
+                    </>
+                  )}
+                </button>
               </form>
             </div>
           </div>
@@ -363,7 +363,7 @@ const itemName =
           <div className="lg:col-span-2 space-y-6">
             <div className="card-premium p-6 rounded-3xl border border-base-300 shadow-sm">
               <h3 className="font-bold text-base-content mb-4 pb-4 border-b border-base-300">
-                Order Summary
+                {t('orderSummary')}
               </h3>
 
               <div className="flex gap-4 mb-6">
@@ -387,52 +387,50 @@ const itemName =
                   </h4>
                   <p className="text-xs text-base-content/60 font-medium">
                     {item?.type === "plan"
-                      ? `${item.interval}ly subscription`
-                      : `By ${item?.instructor?.username}`}
+                      ? (locale === 'ar' ? `اشتراك ${item.interval === 'year' ? 'سنوي' : 'شهري'}` : `${item.interval}ly subscription`)
+                      : `${locale === 'ar' ? 'بواسطة' : 'By'} ${item?.instructor?.username}`}
                   </p>
                 </div>
               </div>
 
-<div className="space-y-3 text-sm mb-6 pb-6 border-b border-base-300 font-medium text-base-content/80">
-                 <div className="flex justify-between">
-                   <span>{item?.type === "course" ? "Unit Price" : "Price"}</span>
-                   <span>${unitPrice}</span>
-                 </div>
-                 {quantity > 1 && (
-                   <div className="flex justify-between">
-                     <span>Quantity</span>
-                     <span>{quantity}</span>
-                   </div>
-                 )}
-                 <div className="flex justify-between text-success">
-                   <span>Discounts</span>
-                   <span>-$0.00</span>
-                 </div>
-               </div>
+              <div className="space-y-3 text-sm mb-6 pb-6 border-b border-base-300 font-medium text-base-content/80">
+                <div className="flex justify-between">
+                  <span>{item?.type === "course" ? (locale === 'ar' ? 'سعر الوحدة' : 'Unit Price') : (locale === 'ar' ? 'السعر' : 'Price')}</span>
+                  <span>${unitPrice}</span>
+                </div>
+                {quantity > 1 && (
+                  <div className="flex justify-between">
+                    <span>{locale === 'ar' ? 'الكمية' : 'Quantity'}</span>
+                    <span>{quantity}</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-success">
+                  <span>{t('discounts')}</span>
+                  <span>-$0.00</span>
+                </div>
+              </div>
 
-               <div className="flex justify-between items-center mb-6">
-                 <span className="font-bold text-base-content">Total</span>
-                 <span className="text-2xl font-extrabold text-base-content">
-                   ${totalPrice}
-                 </span>
-               </div>
-               {accessType === "GROUP" && (
-                 <p className="text-xs text-success text-center mt-2">
-                   Group enrollment: Share your purchase link to add team members after checkout
-                 </p>
-               )}
+              <div className="flex justify-between items-center mb-6">
+                <span className="font-bold text-base-content">{t('total')}</span>
+                <span className="text-2xl font-extrabold text-base-content">
+                  ${totalPrice}
+                </span>
+              </div>
+              {accessType === "GROUP" && (
+                <p className="text-xs text-success text-center mt-2">
+                  {locale === 'ar' ? 'تسجيل المجموعة: شارك رابط الشراء لإضافة أعضاء الفريق بعد الدفع' : 'Group enrollment: Share your purchase link to add team members after checkout'}
+                </p>
+              )}
             </div>
 
             <div className="bg-base-100 rounded-3xl p-6 border border-base-300 shadow-sm flex items-start gap-4">
               <ShieldCheck className="w-8 h-8 text-primary flex-shrink-0" />
               <div>
                 <h4 className="font-bold text-base-content text-sm mb-1">
-                  256-bit Secure Encryption
+                  {t('encryptionTitle')}
                 </h4>
                 <p className="text-xs text-base-content/60 font-medium leading-relaxed">
-                  Your payment information is heavily encrypted and securely
-                  processed. We do not store your full card details on our
-                  servers.
+                  {t('encryptionDesc')}
                 </p>
               </div>
             </div>

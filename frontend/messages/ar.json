@@ -707,7 +707,19 @@
     "selectTime": "اختر الفترة الزمنية",
     "requestCohort": "طلب موعد في المجموعة",
     "noTimeSelected": "يرجى اختيار فترة زمنية مفضلة أولاً.",
-    "bookingSuccess": "تم طلب جلسة المجموعة الافتراضية بنجاح في اليوم {day} الساعة {time}!"
+    "bookingSuccess": "تم طلب جلسة المجموعة الافتراضية بنجاح في اليوم {day} الساعة {time}!",
+    "premiumLocked": "هذا الدرس المميز مغلق",
+    "unlockDesc": "الوصول إلى هذا الدرس يتطلب التسجيل في هذه الدورة أو ترقية حسابك إلى خطة العضوية المميزة.",
+    "loginRequired": "يرجى تسجيل الدخول للوصول",
+    "loginBtn": "تسجيل الدخول",
+    "enrollCourse": "سجل في الدورة",
+    "buyNow": "شراء الآن",
+    "upgradeMembership": "ترقية إلى عضوية",
+    "reviewSuccess": "شكراً لتقييمك هذه الدورة!",
+    "failedSubmitReview": "فشل إرسال التقييم",
+    "notFound": "لم يتم العثور على الدرس أو الدورة",
+    "goBackCourses": "العودة إلى الدورات",
+    "export": "تصدير"
   },
   "editCourse": {
     "backToDashboard": "العودة إلى لوحة التحكم",
@@ -813,5 +825,36 @@
     "students": "الطلاب",
     "reviews": "المراجعات",
     "upcomingEvents": "الأحداث القادمة"
+  },
+  "purchaseConfirmation": {
+    "title": "تأكيد عملية الشراء",
+    "teamAccess": "وصول تدريب الفريق",
+    "individualAccess": "التسجيل الفردي",
+    "orderSummary": "ملخص الطلب",
+    "originalPrice": "السعر الأصلي",
+    "discount": "الخصم",
+    "finalPrice": "السعر النهائي",
+    "total": "الإجمالي",
+    "teamMembersCount": "عدد أعضاء الفريق",
+    "teamDiscountApplied": "تم تطبيق خصم الفريق!",
+    "teamAccessEnabled": "تم تفعيل وصول الفريق",
+    "teamAccessDesc": "بعد الدفع، شارك رابط المجموعة مع أعضاء فريقك لمنحهم حق الوصول.",
+    "whatYouGet": "ما الذي ستحصل عليه",
+    "moneyBack": "ضمان استرداد الأموال خلال 30 يومًا",
+    "lifetimeAccess": "وصول كامل مدى الحياة لجميع محتويات الدورة",
+    "mobileAccess": "الوصول على الهاتف والتلفزيون",
+    "certificate": "شهادة إتمام الدورة",
+    "hoursLeft": "تبقت 10 ساعات بهذا السعر",
+    "proceedToCheckout": "الانتقال إلى الدفع الآمن"
+  },
+  "membershipSuccess": {
+    "title": "تم تفعيل الاشتراك!",
+    "subtitle": "تم تفعيل عضويتك بنجاح. لديك الآن حق الوصول إلى جميع الميزات المميزة.",
+    "subscriptionPlan": "خطة الاشتراك",
+    "status": "الحالة",
+    "active": "نشط",
+    "orderId": "رقم الطلب",
+    "browseCourses": "تصفح الدورات",
+    "goToProfile": "الذهاب للملف الشخصي"
   }
 }

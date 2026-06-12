@@ -712,7 +712,19 @@
     "selectTime": "Select Time Slot",
     "requestCohort": "Request Cohort slot",
     "noTimeSelected": "Please select a preferred time slot first.",
-    "bookingSuccess": "Successfully requested virtual cohort session for the {day}th at {time}!"
+    "bookingSuccess": "Successfully requested virtual cohort session for the {day}th at {time}!",
+    "premiumLocked": "This Premium Lesson is Locked",
+    "unlockDesc": "To access this lesson, enroll in this course or upgrade to a premium membership plan.",
+    "loginRequired": "Please Log In to Access",
+    "loginBtn": "Log In",
+    "enrollCourse": "Enroll in Course",
+    "buyNow": "Buy Now",
+    "upgradeMembership": "Upgrade to Membership",
+    "reviewSuccess": "Thank you for rating this course!",
+    "failedSubmitReview": "Failed to submit review",
+    "notFound": "Lesson or Course not found",
+    "goBackCourses": "Go back to Courses",
+    "export": "Export"
   },
   "editCourse": {
     "backToDashboard": "Back to Dashboard",
@@ -818,5 +830,36 @@
     "students": "Students",
     "reviews": "Reviews",
     "upcomingEvents": "Upcoming Events"
+  },
+  "purchaseConfirmation": {
+    "title": "Confirm Your Purchase",
+    "teamAccess": "Team Training Access",
+    "individualAccess": "Individual Enrollment",
+    "orderSummary": "Order Summary",
+    "originalPrice": "Original Price",
+    "discount": "Discount",
+    "finalPrice": "Final Price",
+    "total": "Total",
+    "teamMembersCount": "Number of Team Members",
+    "teamDiscountApplied": "Team discount applied!",
+    "teamAccessEnabled": "Team Access Enabled",
+    "teamAccessDesc": "After payment, share the group link with your team members to grant them access.",
+    "whatYouGet": "What You Get",
+    "moneyBack": "30-Day Money-Back Guarantee",
+    "lifetimeAccess": "Full lifetime access to all course content",
+    "mobileAccess": "Access on mobile and TV",
+    "certificate": "Certificate of completion",
+    "hoursLeft": "10-hours left at this price",
+    "proceedToCheckout": "Proceed to Secure Checkout"
+  },
+  "membershipSuccess": {
+    "title": "Subscription Activated!",
+    "subtitle": "Your membership has been successfully activated. You now have access to all premium features.",
+    "subscriptionPlan": "Subscription Plan",
+    "status": "Status",
+    "active": "ACTIVE",
+    "orderId": "Order ID",
+    "browseCourses": "Browse Courses",
+    "goToProfile": "Go to Profile"
   }
 }

@@ -7,6 +7,8 @@ import { Category, CategorySchema } from '../../schemas/category.schema';
 import { Lesson, LessonSchema } from '../../schemas/lesson.schema';
 import { Enrollment, EnrollmentSchema } from '../../schemas/enrollment.schema';
 import { Review, ReviewSchema } from '../../schemas/review.schema';
+import { Membership, MembershipSchema } from '../../schemas/membership.schema';
+import { LessonsController } from './lessons.controller';
 
 @Module({
   imports: [
@@ -16,9 +18,10 @@ import { Review, ReviewSchema } from '../../schemas/review.schema';
       { name: Lesson.name, schema: LessonSchema },
       { name: Enrollment.name, schema: EnrollmentSchema },
       { name: Review.name, schema: ReviewSchema },
+      { name: Membership.name, schema: MembershipSchema },
     ]),
   ],
-  controllers: [CoursesController],
+  controllers: [CoursesController, LessonsController],
   providers: [CoursesService],
   exports: [CoursesService, MongooseModule],
 })

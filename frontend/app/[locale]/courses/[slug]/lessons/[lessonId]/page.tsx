@@ -25,7 +25,7 @@ import {
   Wifi,
   WifiOff,
 } from "lucide-react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -42,6 +42,7 @@ export default function LessonView() {
   const lessonId = params.lessonId as string;
   const router = useRouter();
   const locale = useLocale();
+  const t = useTranslations("lesson");
   const queryClient = useQueryClient();
   const { isAuthenticated, user } = useAuth();
 
@@ -101,6 +102,17 @@ export default function LessonView() {
     },
   });
 
+  // Fetch lesson content details securely
+  const { data: lessonContent, isLoading: isContentLoading } = useQuery({
+    queryKey: ["lessonContent", lessonId],
+    queryFn: async () => {
+      const { data } = await api.get(`/courses/lessons/${lessonId}/content`);
+      return data;
+    },
+    enabled: isAuthenticated && !!lessonId,
+    retry: false,
+  });
+
   // Fetch reviews for this course
   const { data: reviews = [], refetch: refetchReviews } = useQuery({
     queryKey: ["reviews", course?.id],
@@ -131,14 +143,14 @@ export default function LessonView() {
       return data;
     },
     onSuccess: () => {
-      setReviewSuccess("Thank you for rating this course!");
+      setReviewSuccess(t("reviewSuccess"));
       setNewComment("");
       setReviewError(null);
       queryClient.invalidateQueries({ queryKey: ["reviews", course?.id] });
       queryClient.invalidateQueries({ queryKey: ["course", slug] });
     },
     onError: (err: any) => {
-      setReviewError(err.response?.data?.message || "Failed to submit review");
+      setReviewError(err.response?.data?.message || t("failedSubmitReview"));
       setReviewSuccess(null);
     },
   });
@@ -191,6 +203,10 @@ export default function LessonView() {
       ? course?.lessons?.[currentIndex + 1]
       : null;
 
+  const videoUrl = lessonContent?.videoUrl || currentLesson?.videoUrl;
+  const content = lessonContent?.content || currentLesson?.content;
+  const isLocked = !currentLesson?.isFree && !lessonContent;
+
   const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const text = e.target.value;
     setOfflineNotes(text);
@@ -240,11 +256,11 @@ export default function LessonView() {
 
   const handleBooking = () => {
     if (!selectedTime) {
-      setBookingMessage("Please select a preferred time slot first.");
+      setBookingMessage(t("noTimeSelected"));
       return;
     }
     setBookingMessage(
-      `Successfully requested virtual cohort session for the ${selectedDay}th at ${selectedTime}!`,
+      t("bookingSuccess", { day: selectedDay, time: selectedTime }),
     );
   };
 
@@ -275,7 +291,7 @@ export default function LessonView() {
     });
   };
 
-  if (isCourseLoading) {
+  if (isCourseLoading || (isAuthenticated && isContentLoading)) {
     return (
       <div className="flex flex-col min-h-screen bg-base-200">
         <Navbar />
@@ -293,13 +309,13 @@ export default function LessonView() {
         <div className="flex justify-center items-center flex-grow flex-col">
           <AlertCircle className="w-16 h-16 text-error mb-4 opacity-50" />
           <h1 className="text-2xl font-bold text-base-content mb-4">
-            Lesson or Course not found
+            {t("notFound")}
           </h1>
           <Link
             href={`/${locale}/courses`}
             className="btn-premium px-6 py-2 rounded-xl"
           >
-            Go back to Courses
+            {t("goBackCourses")}
           </Link>
         </div>
       </div>
@@ -336,8 +352,7 @@ export default function LessonView() {
       {!isOnline && (
         <div className="bg-warning text-warning-content font-bold px-4 py-2 text-center text-xs flex items-center justify-center gap-2 z-40">
           <WifiOff className="w-4 h-4 animate-bounce" />
-          Offline Mode Active. Notes are saved locally and sync automatically
-          when you reconnect.
+          {t("offlineBanner")}
         </div>
       )}
 
@@ -348,13 +363,13 @@ export default function LessonView() {
             href={`/${locale}/courses/${slug}`}
             className="flex items-center gap-2 text-sm font-bold text-base-content/60 hover:text-primary transition-colors"
           >
-            <ArrowLeft className="w-4 h-4" /> Back to Course Overview
+            <ArrowLeft className="w-4 h-4" /> {t("backToCourse")}
           </Link>
           <div className="flex items-center gap-2 text-xs font-bold text-base-content/50">
             <span>{course.title}</span>
             <ChevronRight className="w-3 h-3" />
             <span className="text-base-content">
-              Lesson {currentIndex + 1} of {course.lessons?.length}
+              {t("lessonOf", { current: currentIndex + 1, total: course.lessons?.length })}
             </span>
           </div>
         </div>
@@ -364,10 +379,47 @@ export default function LessonView() {
           {/* Main Video Box Container (Left) */}
           <div className="lg:col-span-2 space-y-4">
             <div className="relative rounded-[2rem] overflow-hidden bg-black aspect-video shadow-2xl border-4 border-base-100/50">
-              {isOnline ? (
-                currentLesson.videoUrl ? (
+              {isLocked ? (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 backdrop-blur-md text-white p-6 text-center select-none z-10">
+                  <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mb-4 text-primary border border-primary/30 shadow-lg animate-pulse">
+                    <Lock className="w-8 h-8" />
+                  </div>
+                  <h3 className="text-xl md:text-2xl font-black mb-2 tracking-wide text-white">
+                    {t("premiumLocked")}
+                  </h3>
+                  <p className="text-xs md:text-sm text-white/70 max-w-md mb-6 leading-relaxed">
+                    {t("unlockDesc")}
+                  </p>
+                  <div className="flex flex-wrap items-center justify-center gap-4">
+                    {isAuthenticated ? (
+                      <>
+                        <Link
+                          href={`/${locale}/checkout/purchase?courseId=${course.id || course._id}&type=individual`}
+                          className="btn btn-primary btn-sm rounded-xl font-bold px-5 py-2 h-auto"
+                        >
+                          {t("buyNow")}
+                        </Link>
+                        <Link
+                          href={`/${locale}/membership`}
+                          className="btn btn-outline btn-primary btn-sm rounded-xl font-bold px-5 py-2 h-auto text-white hover:text-white"
+                        >
+                          {t("upgradeMembership")}
+                        </Link>
+                      </>
+                    ) : (
+                      <Link
+                        href={`/${locale}/login?redirect=/${locale}/courses/${slug}/lessons/${lessonId}`}
+                        className="btn btn-primary btn-sm rounded-xl font-bold px-5 py-2 h-auto"
+                      >
+                        {t("loginBtn")}
+                      </Link>
+                    )}
+                  </div>
+                </div>
+              ) : isOnline ? (
+                videoUrl ? (
                   <iframe
-                    src={currentLesson.videoUrl}
+                    src={videoUrl}
                     className="w-full h-full"
                     allowFullScreen
                     title={currentLesson.title}
@@ -377,20 +429,18 @@ export default function LessonView() {
                     <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mb-4 text-primary">
                       <Play className="w-10 h-10 fill-primary" />
                     </div>
-                    <h3 className="text-xl font-bold">No Video Available</h3>
+                    <h3 className="text-xl font-bold">{t("noVideoAvailable")}</h3>
                     <p className="text-sm opacity-60 mt-1">
-                      This lesson is structured as code documentation and study
-                      reading.
+                      {t("noVideoDesc")}
                     </p>
                   </div>
                 )
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center text-neutral-content p-8 bg-neutral">
                   <WifiOff className="w-16 h-16 opacity-40 mb-4 text-warning" />
-                  <h3 className="text-xl font-bold">Offline Stream Standby</h3>
+                  <h3 className="text-xl font-bold">{t("offlineStandby")}</h3>
                   <p className="text-sm opacity-60 mt-1 max-w-xs text-center">
-                    Video streams require network connectivity. Notes remain
-                    fully readable.
+                    {t("offlineDesc")}
                   </p>
                 </div>
               )}
@@ -403,7 +453,7 @@ export default function LessonView() {
                   href={`/${locale}/courses/${slug}/lessons/${prevLesson.id || prevLesson._id}`}
                   className="btn btn-sm btn-ghost gap-2 font-bold text-base-content/85 hover:text-primary transition-all"
                 >
-                  <ChevronLeft className="w-4 h-4" /> Previous
+                  <ChevronLeft className="w-4 h-4" /> {t("previous")}
                 </Link>
               ) : (
                 <div />
@@ -414,7 +464,7 @@ export default function LessonView() {
                 className={`btn btn-sm rounded-xl font-bold gap-2 ${isCompleted ? "btn-success text-success-content" : "btn-outline border-base-300"}`}
               >
                 <CheckCircle2 className="w-4 h-4" />{" "}
-                {isCompleted ? "Lesson Completed" : "Mark Completed"}
+                {isCompleted ? t("lessonCompleted") : t("markCompleted")}
               </button>
 
               {nextLesson ? (
@@ -422,7 +472,7 @@ export default function LessonView() {
                   href={`/${locale}/courses/${slug}/lessons/${nextLesson.id || nextLesson._id}`}
                   className="btn btn-sm btn-ghost gap-2 font-bold text-base-content/85 hover:text-primary transition-all"
                 >
-                  Next <ChevronRight className="w-4 h-4" />
+                  {t("next")} <ChevronRight className="w-4 h-4" />
                 </Link>
               ) : (
                 <div />
@@ -435,7 +485,7 @@ export default function LessonView() {
             <div className="p-6 border-b border-base-300 bg-base-200/50 flex items-center gap-2 shrink-0">
               <BookOpen className="w-5 h-5 text-primary" />
               <h3 className="font-extrabold text-base-content">
-                Course Syllabus
+                {t("courseSyllabus")}
               </h3>
             </div>
             <div className="divide-y divide-base-300 overflow-y-auto flex-grow">
@@ -462,7 +512,7 @@ export default function LessonView() {
                         </h4>
                         {lesson.duration && (
                           <span className="text-[10px] font-bold text-base-content/50 block mt-1">
-                            {lesson.duration} mins
+                            {lesson.duration} {locale === "ar" ? "دقيقة" : "mins"}
                           </span>
                         )}
                       </div>
@@ -479,18 +529,18 @@ export default function LessonView() {
           {/* Tab Selector Links */}
           <div className="flex border-b border-base-300/80 gap-6 overflow-x-auto">
             {[
-              { id: "overview", label: "Overview & Notes", count: null },
+              { id: "overview", label: t("overview"), count: null },
               {
                 id: "reviews",
-                label: "Reviews & Ratings",
+                label: t("reviews"),
                 count: reviews.length,
               },
               {
                 id: "chat",
-                label: "Developer Chat Room",
+                label: t("chat"),
                 count: chatMessages.length,
               },
-              { id: "cohort", label: "Cohort Scheduler", count: null },
+              { id: "cohort", label: t("cohort"), count: null },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -522,14 +572,22 @@ export default function LessonView() {
                 <div className="lg:col-span-2 space-y-6">
                   <div className="card bg-base-100 p-8 rounded-3xl border border-base-300/80 shadow-md">
                     <span className="badge badge-primary badge-outline text-xs font-bold uppercase tracking-wider mb-4">
-                      Lesson Description
+                      {t("lessonDescription")}
                     </span>
                     <h2 className="text-2xl font-black text-base-content mb-4">
                       {currentLesson.title}
                     </h2>
                     <div className="prose max-w-none text-base-content/85 leading-relaxed font-medium">
-                      {currentLesson.content ||
-                        "This lesson consists of visual coding tutorials and physical study group reviews."}
+                      {isLocked ? (
+                        <div className="flex items-center gap-3 p-4 bg-base-200/50 rounded-2xl border border-base-300">
+                          <Lock className="w-5 h-5 text-primary shrink-0 animate-bounce" />
+                          <span className="text-xs font-bold text-base-content/70">
+                            {t("unlockDesc")}
+                          </span>
+                        </div>
+                      ) : (
+                        content || t("noVideoDesc")
+                      )}
                     </div>
                   </div>
                 </div>
@@ -543,14 +601,14 @@ export default function LessonView() {
                       className="btn btn-xs btn-ghost text-[10px] font-bold gap-1"
                       title="Export as Markdown"
                     >
-                      <FileText className="w-3 h-3" /> Export
+                      <FileText className="w-3 h-3" /> {t("export")}
                     </button>
                     {saveStatus === "saving" && (
                       <span className="loading loading-spinner loading-xs text-primary"></span>
                     )}
                     {saveStatus === "saved" && (
                       <span className="text-[10px] font-bold text-success flex items-center gap-0.5">
-                        <Save className="w-3 h-3" /> Saved
+                        <Save className="w-3 h-3" /> {t("saved")}
                       </span>
                     )}
                   </div>
@@ -559,10 +617,10 @@ export default function LessonView() {
                     <FileText className="w-6 h-6 text-primary" />
                     <div>
                       <h3 className="font-extrabold text-base text-base-content">
-                        Notebook Sandbox
+                        {t("notebookTitle")}
                       </h3>
                       <p className="text-[10px] font-medium text-base-content/60">
-                        Persistent offline study logs
+                        {t("notebookSubtitle")}
                       </p>
                     </div>
                   </div>
@@ -570,7 +628,7 @@ export default function LessonView() {
                   <textarea
                     value={offlineNotes}
                     onChange={handleNotesChange}
-                    placeholder="Type code logs, formulas, or lesson summaries here..."
+                    placeholder={t("notebookPlaceholder")}
                     rows={8}
                     className="textarea textarea-bordered w-full font-mono text-xs p-3 leading-relaxed resize-y focus:outline-none focus:border-primary bg-base-200/50"
                   />
@@ -585,7 +643,7 @@ export default function LessonView() {
                 <div className="lg:col-span-2 space-y-6">
                   <div className="card bg-base-100 p-8 rounded-3xl border border-base-300 shadow-md">
                     <h3 className="text-xl font-extrabold text-base-content mb-6">
-                      User Reviews
+                      {t("userReviews")}
                     </h3>
                     {reviews.length > 0 ? (
                       <div className="space-y-6">
@@ -633,7 +691,7 @@ export default function LessonView() {
                       </div>
                     ) : (
                       <div className="text-center py-12 text-base-content/50 font-bold">
-                        No reviews posted yet. Be the first to review!
+                        {t("noReviews")}
                       </div>
                     )}
                   </div>
@@ -656,7 +714,7 @@ export default function LessonView() {
                         ))}
                       </div>
                       <div className="text-[10px] font-bold text-base-content/50 uppercase tracking-wider">
-                        {totalReviews} Ratings
+                        {t("ratingsCount", { count: totalReviews })}
                       </div>
                     </div>
 
@@ -669,7 +727,7 @@ export default function LessonView() {
                         return (
                           <div key={stars} className="flex items-center gap-3">
                             <span className="w-12 text-base-content/75 text-end">
-                              {stars} Stars
+                              {stars} {locale === "ar" ? "نجوم" : "Stars"}
                             </span>
                             <div className="flex-grow bg-base-200 h-2 rounded-full overflow-hidden">
                               <div
@@ -689,7 +747,7 @@ export default function LessonView() {
                   {/* Submit review form */}
                   <div className="card bg-base-100 p-6 rounded-3xl border border-base-300 shadow-md">
                     <h4 className="font-extrabold text-base-content text-sm mb-4">
-                      Rate this Course
+                      {t("rateCourse")}
                     </h4>
 
                     {reviewSuccess && (
@@ -707,7 +765,7 @@ export default function LessonView() {
                       {/* Star selection */}
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-bold text-base-content/65">
-                          Rating:
+                          {t("rating")}
                         </span>
                         <div className="rating rating-sm">
                           {[1, 2, 3, 4, 5].map((s) => (
@@ -726,10 +784,10 @@ export default function LessonView() {
                       {/* Comment */}
                       <div className="space-y-1">
                         <label className="block text-[10px] font-bold text-base-content/60 uppercase">
-                          Feedback Comment
+                          {t("feedbackComment")}
                         </label>
                         <textarea
-                          placeholder="What did you like or dislike about the syllabus?"
+                          placeholder={t("feedbackPlaceholder")}
                           value={newComment}
                           onChange={(e) => setNewComment(e.target.value)}
                           rows={3}
@@ -744,8 +802,8 @@ export default function LessonView() {
                         className="btn btn-primary btn-sm w-full rounded-xl font-bold"
                       >
                         {submitReviewMutation.isPending
-                          ? "Submitting..."
-                          : "Submit Review"}
+                          ? t("submitting")
+                          : t("submitReview")}
                       </button>
                     </form>
                   </div>
@@ -763,15 +821,15 @@ export default function LessonView() {
                       <Hash className="w-5 h-5 text-primary" />
                       <div>
                         <h3 className="font-extrabold text-sm text-base-content">
-                          developer-classroom-chat
+                          {t("chatRoomTitle")}
                         </h3>
                         <p className="text-[10px] font-bold text-base-content/40 uppercase">
-                          Interactive Developer Forum
+                          {t("chatRoomSubtitle")}
                         </p>
                       </div>
                     </div>
                     <div className="badge badge-sm badge-neutral font-bold">
-                      {chatMessages.length} active logs
+                      {t("activeLogs", { count: chatMessages.length })}
                     </div>
                   </div>
 
@@ -852,7 +910,7 @@ export default function LessonView() {
                                   <ThumbsUp
                                     className={`w-3.5 h-3.5 ${isLiked ? "fill-primary" : ""}`}
                                   />
-                                  <span>{msg.likes?.length || 0} Upvotes</span>
+                                  <span>{t("upvotes", { count: msg.likes?.length || 0 })}</span>
                                 </button>
                               </div>
                             </div>
@@ -862,10 +920,9 @@ export default function LessonView() {
                     ) : (
                       <div className="h-full flex flex-col justify-center items-center text-center p-8 space-y-2 opacity-50">
                         <MessageSquare className="w-12 h-12 text-primary" />
-                        <h4 className="font-bold">No chat history here</h4>
+                        <h4 className="font-bold">{t("noChatHistory")}</h4>
                         <p className="text-xs max-w-xs font-medium">
-                          Type a programming query or paste code to start a
-                          collaboration!
+                          {t("noChatDesc")}
                         </p>
                       </div>
                     )}
@@ -879,7 +936,7 @@ export default function LessonView() {
                     <div className="flex gap-2 items-center">
                       <input
                         type="text"
-                        placeholder="Discuss lessons or ask for code help..."
+                        placeholder={t("chatPlaceholder")}
                         value={chatMessage}
                         onChange={(e) => setChatMessage(e.target.value)}
                         className="flex-grow input input-bordered input-sm rounded-xl focus:outline-none focus:border-primary text-xs"
@@ -894,7 +951,7 @@ export default function LessonView() {
                       >
                         <Code className="w-4 h-4" />
                         <span className="hidden md:inline text-[10px]">
-                          Snippet
+                          {t("snippet")}
                         </span>
                       </button>
 
@@ -912,13 +969,13 @@ export default function LessonView() {
                       <div className="flex flex-col gap-2 p-3 bg-base-300 rounded-xl border border-base-300 animate-fadeIn">
                         <div className="flex items-center justify-between">
                           <label className="text-[10px] font-bold text-base-content/60 uppercase">
-                            Paste Code Snippet
+                            {t("pasteCode")}
                           </label>
 
                           {/* Tag selector */}
                           <div className="flex items-center gap-1.5">
                             <span className="text-[9px] font-bold text-base-content/40 uppercase">
-                              Stack:
+                              {t("stack")}
                             </span>
                             <select
                               value={chatLanguage}
@@ -959,18 +1016,17 @@ export default function LessonView() {
                   <div className="flex items-center gap-3">
                     <Sparkles className="w-5 h-5 text-primary animate-pulse" />
                     <h4 className="font-extrabold text-sm text-base-content">
-                      Syllabus Chat Rules
+                      {t("chatRules")}
                     </h4>
                   </div>
                   <ul className="text-xs text-base-content/85 space-y-2 list-disc pl-4 font-medium leading-relaxed">
-                    <li>This channel is tied to this lesson and course.</li>
-                    <li>Share clean formatted code snippets.</li>
-                    <li>Be helpful and review other student upvotes.</li>
+                    <li>{t("chatRule1")}</li>
+                    <li>{t("chatRule2")}</li>
+                    <li>{t("chatRule3")}</li>
                   </ul>
                   <div className="pt-2 border-t border-base-300">
                     <span className="text-[10px] font-bold text-success flex items-center gap-1">
-                      <UserCheck className="w-3.5 h-3.5" /> Checked & Seeded by
-                      Local Mentors
+                      <UserCheck className="w-3.5 h-3.5" /> {t("seededByMentors")}
                     </span>
                   </div>
                 </div>
@@ -984,10 +1040,10 @@ export default function LessonView() {
                   <Calendar className="w-6 h-6 text-primary" />
                   <div>
                     <h3 className="font-extrabold text-lg text-base-content">
-                      Interactive Cohort
+                      {t("cohortTitle")}
                     </h3>
                     <p className="text-xs font-semibold text-base-content/60">
-                      Schedule a 1-on-1 review or study group session.
+                      {t("cohortSubtitle")}
                     </p>
                   </div>
                 </div>
@@ -1001,7 +1057,7 @@ export default function LessonView() {
                 {/* Day selection */}
                 <div className="space-y-2">
                   <label className="block text-[10px] font-bold text-base-content/60 uppercase tracking-wider">
-                    Select Date (June)
+                    {t("selectDate")}
                   </label>
                   <div className="grid grid-cols-5 gap-2">
                     {[15, 16, 17, 18, 19].map((day) => (
@@ -1022,7 +1078,7 @@ export default function LessonView() {
                 {/* Time selection */}
                 <div className="space-y-2">
                   <label className="block text-[10px] font-bold text-[#1E2A38] dark:text-white/60 uppercase tracking-wider">
-                    Select Time Slot
+                    {t("selectTime")}
                   </label>
                   <div className="grid grid-cols-3 gap-2">
                     {["10:00 AM", "2:00 PM", "6:00 PM"].map((time) => (
@@ -1045,7 +1101,7 @@ export default function LessonView() {
                   disabled={!isOnline}
                   className="btn-premium w-full py-4 rounded-xl font-bold text-xs flex justify-center items-center gap-2 shadow-lg shadow-primary/20 hover:shadow-primary/45"
                 >
-                  <Calendar className="w-4 h-4" /> Request Cohort slot
+                  <Calendar className="w-4 h-4" /> {t("requestCohort")}
                 </button>
               </div>
             )}

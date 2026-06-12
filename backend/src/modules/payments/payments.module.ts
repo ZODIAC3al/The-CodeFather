@@ -8,6 +8,7 @@ import { Enrollment, EnrollmentSchema } from '../../schemas/enrollment.schema';
 import { User, UserSchema } from '../../schemas/user.schema';
 import { MembershipPlan, MembershipPlanSchema } from '../../schemas/membership-plan.schema';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { MembershipsModule } from '../memberships/memberships.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
       { name: MembershipPlan.name, schema: MembershipPlanSchema },
     ]),
     NotificationsModule,
+    MembershipsModule,
   ],
   controllers: [PaymentsController],
   providers: [PaymentsService],

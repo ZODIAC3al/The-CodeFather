@@ -8,6 +8,7 @@ import { Enrollment } from '../../schemas/enrollment.schema';
 import { User } from '../../schemas/user.schema';
 import { MembershipPlan } from '../../schemas/membership-plan.schema';
 import { NotificationsService } from '../notifications/notifications.service';
+import { MembershipsService } from '../memberships/memberships.service';
 import Stripe from 'stripe';
 
 @Injectable()
@@ -23,6 +24,7 @@ export class PaymentsService {
     @InjectModel(User.name) private userModel: Model<User>,
     @InjectModel(MembershipPlan.name) private planModel: Model<MembershipPlan>,
     private notificationsService: NotificationsService,
+    private membershipsService: MembershipsService,
     private config: ConfigService,
   ) {
     const key = this.config.get<string>('STRIPE_SECRET_KEY');
@@ -140,6 +142,11 @@ export class PaymentsService {
         accessType,
         authorizationExpiry: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       });
+
+      try {
+        await this.membershipsService.purchaseMembership(userId, itemId);
+        await this.triggerPurchaseNotifications(userId, itemId, 'subscription');
+      } catch {}
 
       return {
         url: `${frontendUrl}/membership/success?session_id=${orderId}&plan_id=${itemId}`,
@@ -335,15 +342,21 @@ export class PaymentsService {
 
     if (authorization) {
       order.paypalAuthorizationId = authorization.id;
-      order.status = 'AUTHORIZED';
+      order.status = 'PAID';
       order.authorizationExpiry = authorization.seller_payable_breakdown?.expires_at
         ? new Date(authorization.seller_payable_breakdown.expires_at)
         : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
       await order.save();
 
-      if (order.courseId) {
+      if (order.accessType === 'SUBSCRIPTION' && order.planId) {
+        try {
+          await this.membershipsService.purchaseMembership(order.userId, order.planId);
+          await this.triggerPurchaseNotifications(order.userId, order.planId, 'subscription');
+        } catch {}
+      } else if (order.courseId) {
         try {
           await this.enrollmentModel.create({ userId: order.userId, courseId: order.courseId });
+          await this.triggerPurchaseNotifications(order.userId, order.courseId, 'course');
         } catch {}
       }
     }
@@ -357,12 +370,30 @@ export class PaymentsService {
 
       if (event.event_type === 'PAYMENTS.AUTHORIZATION.CREATED' || event.event_type === 'CHECKOUT.ORDER.COMPLETED') {
         const orderId = event.resource?.id;
-        const payerId = event.resource?.payer?.payer_id;
+        if (orderId) {
+          const order = await this.orderModel.findOne({ paypalOrderId: orderId });
+          if (order) {
+            order.status = 'PAID';
+            await order.save();
 
-        await this.orderModel.updateMany(
-          { paypalOrderId: orderId },
-          { status: 'PAID' },
-        );
+            if (order.accessType === 'SUBSCRIPTION' && order.planId) {
+              try {
+                await this.membershipsService.purchaseMembership(order.userId, order.planId);
+                await this.triggerPurchaseNotifications(order.userId, order.planId, 'subscription');
+              } catch {}
+            } else if (order.courseId) {
+              try {
+                await this.enrollmentModel.create({ userId: order.userId, courseId: order.courseId });
+                await this.triggerPurchaseNotifications(order.userId, order.courseId, 'course');
+              } catch {}
+            }
+          } else {
+            await this.orderModel.updateMany(
+              { paypalOrderId: orderId },
+              { status: 'PAID' },
+            );
+          }
+        }
       }
 
       return { received: true };
@@ -394,9 +425,10 @@ export class PaymentsService {
         );
 
         if (accessType === 'SUBSCRIPTION' && planId) {
-          await this.userModel.findByIdAndUpdate(userId, {
-            $setOnInsert: { membershipStartedAt: new Date() },
-          });
+          try {
+            await this.membershipsService.purchaseMembership(userId, planId);
+            await this.triggerPurchaseNotifications(userId, planId, 'subscription');
+          } catch {}
         } else if (courseId) {
           try {
             await this.enrollmentModel.create({ userId, courseId });

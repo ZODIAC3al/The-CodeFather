@@ -8,6 +8,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { useAuth } from '@/contexts/auth-context';
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   BookOpen,
   Users,
@@ -33,6 +34,8 @@ export default function CourseDetailClient({ course, locale }: CourseDetailClien
   const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
   const lpUrl = (path: string) => `/${locale}${path}`;
+  const t = useTranslations('courseDetail');
+  const tCommon = useTranslations('common');
 
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'syllabus' | 'reviews'>('overview');
@@ -46,20 +49,30 @@ export default function CourseDetailClient({ course, locale }: CourseDetailClien
     enabled: isAuthenticated,
   });
 
+  const { data: myMembership } = useQuery({
+    queryKey: ['myMembership'],
+    queryFn: async () => {
+      const { data } = await api.get('/memberships/my');
+      return data;
+    },
+    enabled: isAuthenticated,
+  });
+
   const isEnrolled = enrollments?.some(
     (e: any) => e.courseId === course?.id || e.course?._id === course?.id
-  );
+  ) || myMembership?.status === 'ACTIVE';
 
-const enrollMutation = useMutation({
-     mutationFn: async () => {
-       const price = Number(course?.price ?? course?.discountPrice ?? 0);
-       if (price > 0) {
-         router.push(`/${locale}/checkout/purchase?courseId=${course.id || course._id}&type=individual`);
-         return;
-       }
-       const { data } = await api.post('/enrollments/enroll', { courseId: course?.id || course?._id });
-       return data;
-     },
+  const enrollMutation = useMutation({
+    mutationFn: async () => {
+      const price = Number(course?.price ?? course?.discountPrice ?? 0);
+      const hasActiveMembership = myMembership?.status === 'ACTIVE';
+      if (price > 0 && !hasActiveMembership) {
+        router.push(`/${locale}/checkout/purchase?courseId=${course.id || course._id}&type=individual`);
+        return;
+      }
+      const { data } = await api.post('/enrollments/enroll', { courseId: course?.id || course?._id });
+      return data;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['myEnrollments'] });
       router.push(`/${locale}/courses/${slug}/lessons/${course.lessons?.[0]?.id || course.lessons?.[0]?._id}`);
@@ -109,7 +122,7 @@ const enrollMutation = useMutation({
         <div className="absolute inset-0 overflow-hidden opacity-30">
           <img
             src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1200&auto=format&fit=crop&q=80"
-            alt="Colleague work"
+            alt={course.title}
             className="w-full h-full object-cover"
           />
         </div>
@@ -129,15 +142,15 @@ const enrollMutation = useMutation({
             <div className="flex flex-wrap items-center gap-6 text-xs sm:text-sm font-bold text-white/95">
               <div className="flex items-center gap-1.5">
                 <Star className="w-4 h-4 fill-warning text-warning" />
-                <span>{averageRating} ({totalReviews} Reviews)</span>
+                <span>{averageRating} ({totalReviews} {t('reviews')})</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <Users className="w-4 h-4 text-primary" />
-                <span>{course.enrollmentCount || 0} Students Enrolled</span>
+                <span>{course.enrollmentCount || 0} {t('studentsEnrolled')}</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <BookOpen className="w-4 h-4 text-[#29B2FE]" />
-                <span>{course.lessons?.length || 0} Lessons</span>
+                <span>{course.lessons?.length || 0} {t('lessons')}</span>
               </div>
             </div>
           </div>
@@ -164,7 +177,7 @@ const enrollMutation = useMutation({
                   <span className="text-3xl font-black text-base-content">
                     {(() => {
                       const price = Number(course?.price ?? course?.discountPrice ?? 0);
-                      return price === 0 ? 'Free' : `$${price.toFixed(2)}`;
+                      return price === 0 ? (locale === 'ar' ? 'مجاني' : 'Free') : `$${price.toFixed(2)}`;
                     })()}
                   </span>
                   {(() => {
@@ -172,13 +185,13 @@ const enrollMutation = useMutation({
                     return price > 0 && (
                       <>
                         <span className="text-sm line-through text-base-content/50 font-bold">$99.99</span>
-                        <span className="badge badge-success text-[10px] font-black uppercase text-success-content">50% OFF</span>
+                        <span className="badge badge-success text-[10px] font-black uppercase text-success-content">{locale === 'ar' ? 'خصم 50%' : '50% OFF'}</span>
                       </>
                     );
                   })()}
                 </div>
                 <div className="text-xs font-bold text-error animate-pulse flex items-center gap-1">
-                  <Clock className="w-3.5 h-3.5" /> 10-hours left at this price!
+                  <Clock className="w-3.5 h-3.5" /> {t('hoursLeft')}
                 </div>
 
                 {checkoutError && (
@@ -190,7 +203,7 @@ const enrollMutation = useMutation({
                     href={`/${locale}/courses/${slug}/lessons/${course.lessons?.[0]?.id || course.lessons?.[0]?._id}`}
                     className="btn btn-primary w-full rounded-2xl font-bold py-3 text-white flex justify-center items-center gap-2 shadow-lg shadow-primary/20 hover:shadow-primary/45"
                   >
-                    <Play className="w-4 h-4 fill-white text-white" /> Resume Curriculum
+                    <Play className="w-4 h-4 fill-white text-white" /> {t('resumeCurriculum')}
                   </Link>
                 ) : (
                   <button
@@ -198,40 +211,40 @@ const enrollMutation = useMutation({
                     disabled={enrollMutation.isPending}
                     className="btn btn-primary w-full rounded-2xl font-bold py-3 text-white flex justify-center items-center gap-2 shadow-lg shadow-primary/20 hover:shadow-primary/45"
                   >
-                    {enrollMutation.isPending ? 'Processing...' : (() => {
+                    {enrollMutation.isPending ? t('processing') : (() => {
                       const price = Number(course?.price ?? course?.discountPrice ?? 0);
-                      return price === 0 ? 'Enroll for Free' : 'Buy Now';
+                      return price === 0 ? t('enrollFree') : t('buyNow');
                     })()}
                   </button>
                 )}
 
                 <div className="space-y-3 pt-4 border-t border-base-300">
-                  <h4 className="font-extrabold text-xs text-base-content/80 uppercase tracking-wider">This Course includes:</h4>
+                  <h4 className="font-extrabold text-xs text-base-content/80 uppercase tracking-wider">{t('courseIncludes')}</h4>
                   <ul className="text-xs font-bold text-base-content/70 space-y-2.5">
                     <li className="flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 text-success" /> 30-Day Money-Back Guarantee
+                      <CheckCircle2 className="w-4 h-4 text-success" /> {t('moneyBack')}
                     </li>
                     <li className="flex items-center gap-2">
-                      <BookOpen className="w-4 h-4 text-[#29B2FE]" /> Full lifetime access
+                      <BookOpen className="w-4 h-4 text-[#29B2FE]" /> {t('lifetimeAccess')}
                     </li>
                     <li className="flex items-center gap-2">
-                      <Smartphone className="w-4 h-4 text-primary" /> Access on mobile and TV
+                      <Smartphone className="w-4 h-4 text-primary" /> {t('mobileAccess')}
                     </li>
                     <li className="flex items-center gap-2">
-                      <Award className="w-4 h-4 text-[#33D190]" /> Certificate of completion
+                      <Award className="w-4 h-4 text-[#33D190]" /> {t('certificate')}
                     </li>
                   </ul>
                 </div>
 
                 <div className="space-y-4 pt-4 border-t border-base-300">
-<div className="text-xs font-bold text-center space-y-2">
-                   <div className="text-base-content/50">Training 5 or more people?</div>
-                   <Link href={`/${locale}/checkout/purchase?courseId=${course.id || course._id}&type=group`} className="text-primary hover:underline font-bold block">
-                     Buy Team Training Access
-                   </Link>
-                 </div>
+                  <div className="text-xs font-bold text-center space-y-2">
+                    <div className="text-base-content/50">{t('trainingTeams')}</div>
+                    <Link href={`/${locale}/checkout/purchase?courseId=${course.id || course._id}&type=group`} className="text-primary hover:underline font-bold block">
+                      {locale === 'ar' ? 'شراء حق الوصول لتدريب الفريق' : 'Buy Team Training Access'}
+                    </Link>
+                  </div>
                   <div className="flex items-center justify-center gap-4 pt-1 border-t border-base-300/50">
-                    <span className="text-xs font-bold text-base-content/50">Share:</span>
+                    <span className="text-xs font-bold text-base-content/50">{t('share')}</span>
                     <div className="flex gap-2">
                       <button className="btn btn-ghost btn-circle btn-xs text-base-content/60 hover:text-primary" aria-label="Share on Facebook">
                         <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M9 8H7v3h2v9h3v-9h3.6l.4-3H12V6c0-.9.2-1.2 1.1-1.2H15V2h-2.8C9.5 2 9 3.5 9 5.8V8z" /></svg>
@@ -260,7 +273,7 @@ const enrollMutation = useMutation({
                   : 'text-base-content/60 hover:text-primary'
                   }`}
               >
-                {tab}
+                {tab === 'overview' ? t('overview') : tab === 'syllabus' ? t('syllabus') : t('reviews')}
               </button>
             ))}
           </div>
@@ -269,7 +282,7 @@ const enrollMutation = useMutation({
             {activeTab === 'overview' && (
               <div className="space-y-6">
                 <div className="card bg-base-100 p-8 rounded-3xl border border-base-300 shadow-sm space-y-4">
-                  <h3 className="text-xl font-extrabold text-[#1E2A38] dark:text-white">About this course</h3>
+                  <h3 className="text-xl font-extrabold text-[#1E2A38] dark:text-white">{t('aboutCourse')}</h3>
                   <p className="text-sm sm:text-base text-base-content/75 leading-relaxed font-medium">
                     {course.description}
                   </p>
@@ -280,7 +293,7 @@ const enrollMutation = useMutation({
             {activeTab === 'syllabus' && (
               <div className="card bg-base-100 rounded-3xl border border-base-300 shadow-sm overflow-hidden">
                 <div className="p-6 border-b border-base-300 bg-base-200/50">
-                  <h3 className="font-extrabold text-[#1E2A38] dark:text-white">Course Curriculum</h3>
+                  <h3 className="font-extrabold text-[#1E2A38] dark:text-white">{t('courseCurriculum')}</h3>
                 </div>
                 <div className="divide-y divide-base-300">
                   {course.lessons?.map((lesson: any, idx: number) => (
@@ -292,13 +305,13 @@ const enrollMutation = useMutation({
                         <div>
                           <h4 className="font-bold text-base-content text-sm">{lesson.title}</h4>
                           <span className="text-xs text-base-content/50 flex items-center gap-1 mt-1 font-semibold">
-                            <Play className="w-3.5 h-3.5" /> Video Lesson ({lesson.duration || 10}m)
+                            <Play className="w-3.5 h-3.5" /> {t('videoLesson', { duration: lesson.duration || 10 })}
                           </span>
                         </div>
                       </div>
                       {isEnrolled ? (
                         <Link href={`/${locale}/courses/${slug}/lessons/${lesson.id || lesson._id}`} className="btn btn-sm btn-ghost text-primary hover:bg-primary/10 font-bold rounded-xl">
-                          Watch
+                          {t('watch')}
                         </Link>
                       ) : (
                         <Lock className="w-4 h-4 text-base-content/35 shrink-0" />
@@ -319,7 +332,7 @@ const enrollMutation = useMutation({
                         <Star key={s} className={`w-4 h-4 ${s <= Math.round(Number(averageRating)) ? 'fill-warning text-warning' : 'text-base-content/20'}`} />
                       ))}
                     </div>
-                    <div className="text-[10px] font-bold text-base-content/50 uppercase">{totalReviews} Ratings</div>
+                    <div className="text-[10px] font-bold text-base-content/50 uppercase">{t('ratingCount', { count: totalReviews })}</div>
                   </div>
                 </div>
 
@@ -340,7 +353,7 @@ const enrollMutation = useMutation({
                     ))
                   ) : (
                     <div className="text-center py-6 text-base-content/50 font-bold text-sm">
-                      No student reviews registered yet.
+                      {t('noReviewsYet')}
                     </div>
                   )}
                 </div>
@@ -352,7 +365,7 @@ const enrollMutation = useMutation({
         <aside className="space-y-6">
           <div className="card bg-base-100 p-6 rounded-3xl border border-base-300 shadow-sm">
             <h3 className="font-extrabold text-base-content/40 text-[10px] uppercase tracking-wider mb-4">
-              Instructor Profile
+              {t('instructorProfile')}
             </h3>
             <div className="flex items-center gap-4 mb-4">
               <div className="w-14 h-14 rounded-full bg-primary/20 text-primary flex items-center justify-center font-extrabold text-xl uppercase shadow-inner">
@@ -362,7 +375,7 @@ const enrollMutation = useMutation({
                 <h4 className="font-extrabold text-base-content text-lg leading-tight">
                   {course.instructor?.username || 'Unknown Instructor'}
                 </h4>
-                <span className="text-xs text-primary font-bold">Certificated Instructor</span>
+                <span className="text-xs text-primary font-bold">{t('certifiedInstructor')}</span>
               </div>
             </div>
           </div>

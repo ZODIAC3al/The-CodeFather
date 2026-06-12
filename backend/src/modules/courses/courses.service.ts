@@ -144,7 +144,14 @@ export class CoursesService {
       id: course._id.toString(),
       instructor: obj.instructorId,
       category: obj.categoryId,
-      lessons: lessons.map((l) => ({ ...l.toObject(), id: l._id.toString() })),
+      lessons: lessons.map((l) => {
+        const lObj = l.toObject();
+        if (!lObj.isFree) {
+          delete lObj.content;
+          delete lObj.videoUrl;
+        }
+        return { ...lObj, id: l._id.toString() };
+      }),
       reviews: reviews.map((r: any) => {
         const rObj = r.toObject();
         return {
@@ -176,7 +183,14 @@ export class CoursesService {
       id: course._id.toString(),
       instructor: obj.instructorId,
       category: obj.categoryId,
-      lessons: lessons.map((l) => ({ ...l.toObject(), id: l._id.toString() })),
+      lessons: lessons.map((l) => {
+        const lObj = l.toObject();
+        if (!lObj.isFree) {
+          delete lObj.content;
+          delete lObj.videoUrl;
+        }
+        return { ...lObj, id: l._id.toString() };
+      }),
       reviews: [],
       _count: { enrollments: 0 },
     };
