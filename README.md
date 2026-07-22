@@ -92,12 +92,15 @@ DB --> UI
 - Refund Management
 - Revenue Dashboards
 
-### 📱 Progressive Web App
-- Offline Mode
-- Installable App
-- Push Notifications
-- Background Sync
-- Cache-First Strategy
+### 📱 Progressive Web App & Offline-First Reliability Architecture
+- **Persistent Sync Queue**: `OfflineSyncQueueManager` caches pending mutations in `localStorage` surviving page reloads, browser restarts, and crashes.
+- **Duplicate Submission Prevention**: Automatic client-side `Idempotency-Key` (UUIDv4) and `x-client-mutation-id` header injection on non-GET mutations (`POST`, `PUT`, `PATCH`, `DELETE`).
+- **Backend Idempotency Interceptor**: NestJS `IdempotencyInterceptor` caches mutation outputs across a sliding 24-hour window, deduplicating retried requests and returning cached responses without re-executing business logic.
+- **Smart Retry Policy**: Exponential backoff with random jitter (`Math.min(30000, 1000 * 2^attempt + jitter)`). Retries transient errors (HTTP 429, 502, 503, 504, network failure) while failing fast on validation (400) and auth (401/403) errors.
+- **Version & Conflict Detection**: Optimistic versioning (`If-Match`) and HTTP 409 conflict handling.
+- **Automated Reconnection**: Listens to `online` and `visibilitychange` window events to automatically flush pending operations when internet connectivity is restored.
+- **Progressive Web App**: Service worker runtime caching and offline document fallbacks via `@ducanh2912/next-pwa`.
+
 ### Core Technology Stack
 
 *   **Frontend Ecosystem:**

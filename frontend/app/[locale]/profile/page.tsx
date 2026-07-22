@@ -9,9 +9,9 @@ import { useLocale, useTranslations } from 'next-intl';
 import Footer from '@/components/Footer';
 import { useQuery } from '@tanstack/react-query';
 import Link from 'next/link';
-import { 
-  User, Camera, Mail, Plus, Search, Bell, Globe, 
-  LayoutDashboard, BookOpen, GraduationCap, MessageSquare, Settings, 
+import {
+  User, Camera, Mail, Plus, Search, Bell, Globe,
+  LayoutDashboard, BookOpen, GraduationCap, MessageSquare, Settings,
   CheckCircle, Clock, Video, ArrowRight, Compass, Calendar,
   Users, Zap, Award, Trash2, Download, UploadCloud, Check, Send, Code, FileText
 } from 'lucide-react';
@@ -261,7 +261,7 @@ export default function ProfilePage() {
     }
   }, [isLoading, isAuthenticated, router, locale]);
 
-// Sync form state when user changes
+  // Sync form state when user changes
   useEffect(() => {
     if (user) {
       setFormData({
@@ -309,7 +309,7 @@ export default function ProfilePage() {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       setAvatarUrl(data.url);
-      
+
       await api.patch('/users/profile', { avatar: data.url });
       await refreshUser();
       setMsg({ type: 'success', text: t('avatarSuccessMsg') });
@@ -360,7 +360,7 @@ export default function ProfilePage() {
       <Navbar />
 
       <div className="flex flex-1 max-w-[1400px] mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 gap-6 flex-col md:flex-row">
-        
+
         {/* Dynamic Sidebar */}
         <aside className="hidden md:flex flex-col items-center w-20 shrink-0 gap-4 py-6 bg-base-100 rounded-3xl border border-base-300 shadow-sm h-fit sticky top-24">
           {tabs.map((tab) => {
@@ -373,11 +373,10 @@ export default function ProfilePage() {
                 className="w-12 h-12 rounded-2xl flex flex-col items-center justify-center cursor-pointer transition-all duration-200 tooltip tooltip-right"
                 data-tip={tab.label}
               >
-                <div className={`p-2.5 rounded-xl transition-all duration-200 ${
-                  isActive 
-                    ? 'bg-primary text-primary-content shadow-lg shadow-primary/20 scale-110' 
+                <div className={`p-2.5 rounded-xl transition-all duration-200 ${isActive
+                    ? 'bg-primary text-primary-content shadow-lg shadow-primary/20 scale-110'
                     : 'text-base-content/50 hover:bg-base-200 hover:text-base-content'
-                }`}>
+                  }`}>
                   <Icon className="w-5 h-5" />
                 </div>
               </button>
@@ -394,11 +393,10 @@ export default function ProfilePage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl border whitespace-nowrap text-xs font-bold transition-all duration-200 ${
-                  isActive
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl border whitespace-nowrap text-xs font-bold transition-all duration-200 ${isActive
                     ? 'bg-primary text-primary-content border-primary shadow-md'
                     : 'bg-base-100 hover:bg-base-200 border-base-300 text-base-content/75'
-                }`}
+                  }`}
               >
                 <Icon className="w-4 h-4" />
                 <span>{tab.label}</span>
@@ -409,7 +407,7 @@ export default function ProfilePage() {
 
         {/* Main Content Area */}
         <main className="flex-1 min-w-0 flex flex-col gap-6">
-          
+
           {/* Header Layout */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
@@ -418,12 +416,12 @@ export default function ProfilePage() {
               </h1>
               <p className="text-xs text-base-content/50 font-bold mt-0.5">{currentDate}</p>
             </div>
-            
+
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <div className="relative flex-1 sm:flex-none">
-                <input 
-                  type="text" 
-                  placeholder={tCommon('search')} 
+                <input
+                  type="text"
+                  placeholder={tCommon('search')}
                   className="input input-sm input-bordered rounded-xl pl-8 pr-4 w-full sm:w-48 focus:input-primary"
                 />
                 <Search className="w-4 h-4 text-base-content/40 absolute left-2.5 top-1/2 -translate-y-1/2" />
@@ -477,10 +475,10 @@ export default function ProfilePage() {
                     <span>{locale === 'ar' ? 'تقدم المستوى' : 'Level Progress'}</span>
                     <span>{Math.round(((user.xp || 0) / ((user.level || 1) * 100)) * 100)}%</span>
                   </div>
-                  <progress 
-                    className="progress progress-primary w-full h-2.5 rounded-full shadow-inner" 
-                    value={user.xp || 0} 
-                    max={(user.level || 1) * 100} 
+                  <progress
+                    className="progress progress-primary w-full h-2.5 rounded-full shadow-inner"
+                    value={user.xp || 0}
+                    max={(user.level || 1) * 100}
                   />
                 </div>
               </div>
@@ -529,7 +527,7 @@ export default function ProfilePage() {
                   {/* Courses Progress */}
                   <div className="card bg-base-100 border border-base-300 p-6 rounded-3xl shadow-sm space-y-4">
                     <h3 className="text-sm font-black text-base-content/80 uppercase tracking-wider">{t('recentProgress')}</h3>
-                    
+
                     {isEnrollmentsLoading ? (
                       <div className="flex justify-center py-8">
                         <span className="loading loading-spinner text-primary" />
@@ -558,13 +556,13 @@ export default function ProfilePage() {
                                 <p className="text-xs text-base-content/40 font-bold">Progress: {enrollment.progress || 0}%</p>
                               </div>
                             </div>
-                            
+
                             <div className="w-full sm:w-auto flex items-center gap-3">
                               <div className="flex-1 sm:w-36">
                                 <progress className="progress progress-primary w-full" value={enrollment.progress || 0} max="100" />
                               </div>
-                              <Link 
-                                href={lp(`/courses/${enrollment.course?.slug || enrollment.course?.id}`)} 
+                              <Link
+                                href={lp(`/courses/${enrollment.course?.slug || enrollment.course?.id}`)}
                                 className="btn btn-xs btn-outline btn-primary rounded-lg font-bold shrink-0"
                               >
                                 {t('resumeLearning')}
@@ -589,13 +587,12 @@ export default function ProfilePage() {
                         { id: 'quiz-master', name: 'Quiz Master', desc: 'Pass a lesson quiz', unlocked: user.badges?.includes('quiz-master') },
                         { id: 'cadet', name: 'Codefather Cadet', desc: 'Join the academy', unlocked: true }
                       ].map((b) => (
-                        <div 
-                          key={b.id} 
-                          className={`p-4 rounded-2xl border text-center space-y-2 flex flex-col items-center justify-between transition-all ${
-                            b.unlocked 
-                              ? 'bg-primary/5 border-primary/20 text-base-content shadow-xs scale-102 font-bold' 
+                        <div
+                          key={b.id}
+                          className={`p-4 rounded-2xl border text-center space-y-2 flex flex-col items-center justify-between transition-all ${b.unlocked
+                              ? 'bg-primary/5 border-primary/20 text-base-content shadow-xs scale-102 font-bold'
                               : 'bg-base-200/50 border-base-300 text-base-content/40 opacity-60'
-                          }`}
+                            }`}
                         >
                           <div className={`p-3 rounded-full ${b.unlocked ? 'bg-primary/10 text-primary animate-pulse' : 'bg-base-300'}`}>
                             <Award className="w-6 h-6" />
@@ -623,13 +620,12 @@ export default function ProfilePage() {
                         leaderboard.slice(0, 5).map((u: any, idx: number) => {
                           const isMe = u.username === user.username;
                           return (
-                            <div 
-                              key={u._id || idx} 
-                              className={`flex items-center justify-between p-3 rounded-2xl border transition-colors ${
-                                isMe 
-                                  ? 'bg-primary/10 border-primary text-primary font-black shadow-xs' 
+                            <div
+                              key={u._id || idx}
+                              className={`flex items-center justify-between p-3 rounded-2xl border transition-colors ${isMe
+                                  ? 'bg-primary/10 border-primary text-primary font-black shadow-xs'
                                   : 'bg-base-200/50 border-base-300'
-                              }`}
+                                }`}
                             >
                               <div className="flex items-center gap-3">
                                 <span className="w-4 text-xs font-black text-center">{idx + 1}</span>
@@ -666,32 +662,32 @@ export default function ProfilePage() {
                         <span className="font-extrabold text-base-content/75">{locale === 'ar' ? 'الهدف اليومي (دقائق):' : 'Daily Goal (mins):'}</span>
                         <span className="badge badge-neutral text-xs font-black">{dailyGoalVal}m</span>
                       </div>
-                      <input 
-                        type="range" 
-                        min="10" 
-                        max="120" 
+                      <input
+                        type="range"
+                        min="10"
+                        max="120"
                         step="5"
-                        value={dailyGoalVal} 
-                        onChange={(e) => setDailyGoalVal(Number(e.target.value))} 
+                        value={dailyGoalVal}
+                        onChange={(e) => setDailyGoalVal(Number(e.target.value))}
                         onMouseUp={handleUpdateGoals}
                         onTouchEnd={handleUpdateGoals}
-                        className="w-full accent-primary h-1 bg-base-300 rounded cursor-pointer" 
+                        className="w-full accent-primary h-1 bg-base-300 rounded cursor-pointer"
                       />
 
                       <div className="flex justify-between items-center text-xs pt-1">
                         <span className="font-extrabold text-base-content/75">{locale === 'ar' ? 'الهدف الأسبوعي (دقائق):' : 'Weekly Goal (mins):'}</span>
                         <span className="badge badge-neutral text-xs font-black">{weeklyGoalVal}m</span>
                       </div>
-                      <input 
-                        type="range" 
-                        min="50" 
-                        max="600" 
+                      <input
+                        type="range"
+                        min="50"
+                        max="600"
                         step="10"
-                        value={weeklyGoalVal} 
-                        onChange={(e) => setWeeklyGoalVal(Number(e.target.value))} 
+                        value={weeklyGoalVal}
+                        onChange={(e) => setWeeklyGoalVal(Number(e.target.value))}
                         onMouseUp={handleUpdateGoals}
                         onTouchEnd={handleUpdateGoals}
-                        className="w-full accent-primary h-1 bg-base-300 rounded cursor-pointer" 
+                        className="w-full accent-primary h-1 bg-base-300 rounded cursor-pointer"
                       />
                     </div>
 
@@ -699,15 +695,15 @@ export default function ProfilePage() {
                     <div className="space-y-3 pt-3 border-t border-base-200">
                       <h4 className="text-xs font-black text-base-content/70 uppercase tracking-wider">{locale === 'ar' ? 'قائمة المهام اليومية' : 'Daily Study To-Do List'}</h4>
                       <form onSubmit={handleAddTodo} className="flex gap-2">
-                        <input 
-                          type="text" 
+                        <input
+                          type="text"
                           placeholder={locale === 'ar' ? 'إضافة مهمة جديدة...' : 'Add study todo...'}
                           value={newTodo}
                           onChange={(e) => setNewTodo(e.target.value)}
                           className="flex-grow input input-xs input-bordered rounded-lg focus:input-primary text-xs"
                         />
-                        <button 
-                          type="submit" 
+                        <button
+                          type="submit"
                           disabled={isAddingTodo || !newTodo.trim()}
                           className="btn btn-primary btn-xs rounded-lg font-black cursor-pointer"
                         >
@@ -719,10 +715,10 @@ export default function ProfilePage() {
                         {schedule && schedule.todos && schedule.todos.length > 0 ? (
                           schedule.todos.map((todo: any, idx: number) => (
                             <div key={idx} className="flex items-center gap-2.5 p-2 bg-base-200/50 hover:bg-base-200 rounded-xl border border-base-300/60 transition-colors">
-                              <input 
-                                type="checkbox" 
-                                checked={todo.completed} 
-                                onChange={() => handleToggleTodo(idx, todo.completed)} 
+                              <input
+                                type="checkbox"
+                                checked={todo.completed}
+                                onChange={() => handleToggleTodo(idx, todo.completed)}
                                 className="checkbox checkbox-xs checkbox-primary rounded cursor-pointer"
                               />
                               <span className={`text-xs font-semibold ${todo.completed ? 'line-through text-base-content/40' : 'text-base-content/80'}`}>{todo.text}</span>
@@ -744,8 +740,8 @@ export default function ProfilePage() {
                           const intensity = (idx * 7) % 5;
                           const colors = ['bg-base-300', 'bg-primary/20', 'bg-primary/45', 'bg-primary/70', 'bg-primary'];
                           return (
-                            <div 
-                              key={idx} 
+                            <div
+                              key={idx}
                               className={`w-5.5 h-5.5 rounded-sm ${colors[intensity]} tooltip tooltip-top cursor-pointer`}
                               data-tip={`Day ${idx + 1}: ${intensity * 1.5} hrs study`}
                             />
@@ -783,7 +779,7 @@ export default function ProfilePage() {
                               </span>
                               <span>{t('onlineClass')}</span>
                             </div>
-                            <a 
+                            <a
                               href={meeting.roomUrl || '#'}
                               target="_blank"
                               rel="noopener noreferrer"
@@ -805,7 +801,7 @@ export default function ProfilePage() {
           {activeTab === 'courses' && (
             <div className="card bg-base-100 border border-base-300 p-6 rounded-3xl shadow-sm space-y-6">
               <h3 className="text-sm font-black text-base-content/80 uppercase tracking-wider">{t('tabCourses')}</h3>
-              
+
               {isEnrollmentsLoading ? (
                 <div className="flex justify-center py-12">
                   <span className="loading loading-spinner text-primary" />
@@ -831,13 +827,13 @@ export default function ProfilePage() {
                           {enrollment.course?.category?.name || 'Class'}
                         </span>
                       </div>
-                      
+
                       <div className="p-4 flex-grow flex flex-col justify-between space-y-4">
                         <div className="space-y-1">
                           <h4 className="font-extrabold text-sm text-base-content line-clamp-1 leading-snug">{enrollment.course?.title}</h4>
                           <p className="text-xs text-base-content/60 line-clamp-2 leading-relaxed">{enrollment.course?.description}</p>
                         </div>
-                        
+
                         <div className="space-y-3 pt-2">
                           <div className="space-y-1">
                             <div className="flex items-center justify-between text-[10px] font-bold text-base-content/50">
@@ -846,9 +842,9 @@ export default function ProfilePage() {
                             </div>
                             <progress className="progress progress-primary w-full" value={enrollment.progress || 0} max="100" />
                           </div>
-                          
+
                           {enrollment.progress >= 100 ? (
-                            <button 
+                            <button
                               onClick={() => handleViewCertificate(enrollment.course?.id || enrollment.course?._id)}
                               disabled={isCertificateLoading}
                               className="btn btn-sm btn-success text-white w-full rounded-xl font-bold flex items-center justify-center gap-1.5 cursor-pointer"
@@ -861,8 +857,8 @@ export default function ProfilePage() {
                               )}
                             </button>
                           ) : (
-                            <Link 
-                              href={lp(`/courses/${enrollment.course?.slug || enrollment.course?.id}`)} 
+                            <Link
+                              href={lp(`/courses/${enrollment.course?.slug || enrollment.course?.id}`)}
                               className="btn btn-sm btn-primary w-full rounded-xl font-bold flex items-center justify-center gap-1.5"
                             >
                               {t('resumeLearning')}
@@ -900,7 +896,7 @@ export default function ProfilePage() {
                       <p className="text-xs text-base-content/60 leading-relaxed font-medium">{track.desc}</p>
                     </div>
 
-                    <Link 
+                    <Link
                       href={lp(`/roadmap?track=${track.id}`)}
                       className="btn btn-sm btn-outline btn-primary rounded-xl font-bold flex items-center justify-center gap-1.5 mt-2"
                     >
@@ -916,7 +912,7 @@ export default function ProfilePage() {
           {activeTab === 'meetings' && (
             <div className="card bg-base-100 border border-base-300 p-6 rounded-3xl shadow-sm space-y-6">
               <h3 className="text-sm font-black text-base-content/80 uppercase tracking-wider">{t('tabMeetings')}</h3>
-              
+
               {isMeetingsLoading ? (
                 <div className="flex justify-center py-12">
                   <span className="loading loading-spinner text-primary" />
@@ -949,7 +945,7 @@ export default function ProfilePage() {
                           )}
                         </div>
 
-                        <a 
+                        <a
                           href={meeting.roomUrl || '#'}
                           target="_blank"
                           rel="noopener noreferrer"
@@ -971,10 +967,10 @@ export default function ProfilePage() {
               <div className="h-32 bg-gradient-to-r from-blue-400 via-indigo-200 to-amber-100 relative" />
 
               <div className="px-6 pb-8">
-                
+
                 <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 -mt-10 mb-8">
                   <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4">
-                    <div 
+                    <div
                       onClick={handleAvatarClick}
                       className="w-24 h-24 rounded-full border-4 border-base-100 bg-base-300 overflow-hidden relative group cursor-pointer shadow-md"
                     >
@@ -992,16 +988,16 @@ export default function ProfilePage() {
                       <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                         <Camera className="w-6 h-6 text-white" />
                       </div>
-                      <input 
-                        type="file" 
-                        ref={fileInputRef} 
-                        className="hidden" 
-                        accept="image/*" 
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        className="hidden"
+                        accept="image/*"
                         onChange={handleFileChange}
                         disabled={isUploading}
                       />
                     </div>
-                    
+
                     <div className="mb-1">
                       <h2 className="text-xl font-extrabold text-base-content">{user.fullName || user.username}</h2>
                       <p className="text-xs text-base-content/50 font-bold">{user.email}</p>
@@ -1010,23 +1006,23 @@ export default function ProfilePage() {
 
                   <div>
                     {!isEditing ? (
-                      <button 
-                        onClick={() => setIsEditing(true)} 
+                      <button
+                        onClick={() => setIsEditing(true)}
                         className="btn btn-primary rounded-xl font-bold px-6 text-xs sm:text-sm"
                       >
                         {t('editProfile')}
                       </button>
                     ) : (
                       <div className="flex gap-2">
-                        <button 
-                          onClick={() => setIsEditing(false)} 
+                        <button
+                          onClick={() => setIsEditing(false)}
                           className="btn btn-ghost border border-base-300 rounded-xl font-bold px-4 text-xs sm:text-sm"
                           disabled={isSaving}
                         >
                           {tCommon('cancel')}
                         </button>
-                        <button 
-                          onClick={handleSubmit} 
+                        <button
+                          onClick={handleSubmit}
                           className="btn btn-primary rounded-xl font-bold px-6 text-xs sm:text-sm"
                           disabled={isSaving}
                         >
@@ -1040,8 +1036,8 @@ export default function ProfilePage() {
                 <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className="label text-xs font-bold text-base-content/50 uppercase tracking-wider">{t('fullName')}</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       placeholder={t('fullName')}
                       className="input input-bordered w-full rounded-xl font-semibold text-sm focus:input-primary"
                       value={formData.fullName}
@@ -1052,8 +1048,8 @@ export default function ProfilePage() {
 
                   <div>
                     <label className="label text-xs font-bold text-base-content/50 uppercase tracking-wider">{t('nickName')}</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       placeholder={t('nickName')}
                       className="input input-bordered w-full rounded-xl font-semibold text-sm focus:input-primary"
                       value={formData.nickName}
@@ -1064,7 +1060,7 @@ export default function ProfilePage() {
 
                   <div>
                     <label className="label text-xs font-bold text-base-content/50 uppercase tracking-wider">{t('gender')}</label>
-                    <select 
+                    <select
                       className="select select-bordered w-full rounded-xl font-semibold text-sm focus:select-primary"
                       value={formData.gender}
                       onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
@@ -1078,8 +1074,8 @@ export default function ProfilePage() {
 
                   <div>
                     <label className="label text-xs font-bold text-base-content/50 uppercase tracking-wider">{t('country')}</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       placeholder={t('country')}
                       className="input input-bordered w-full rounded-xl font-semibold text-sm focus:input-primary"
                       value={formData.country}
@@ -1090,8 +1086,8 @@ export default function ProfilePage() {
 
                   <div>
                     <label className="label text-xs font-bold text-base-content/50 uppercase tracking-wider">{t('language')}</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       placeholder={t('language')}
                       className="input input-bordered w-full rounded-xl font-semibold text-sm focus:input-primary"
                       value={formData.language}
@@ -1102,8 +1098,8 @@ export default function ProfilePage() {
 
                   <div>
                     <label className="label text-xs font-bold text-base-content/50 uppercase tracking-wider">{t('timeZone')}</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       placeholder={t('timeZone')}
                       className="input input-bordered w-full rounded-xl font-semibold text-sm focus:input-primary"
                       value={formData.timeZone}
@@ -1115,7 +1111,7 @@ export default function ProfilePage() {
 
                 <div className="mt-10 pt-8 border-t border-base-200">
                   <h3 className="text-sm font-black text-base-content/85 mb-4">{t('myEmailAddress')}</h3>
-                  
+
                   <div className="flex flex-col gap-3">
                     <div className="flex items-center justify-between p-3.5 bg-base-200/50 hover:bg-base-200 rounded-2xl border border-base-300 transition-colors">
                       <div className="flex items-center gap-3">
@@ -1133,7 +1129,7 @@ export default function ProfilePage() {
                     </div>
                   </div>
 
-                  <button 
+                  <button
                     type="button"
                     className="btn btn-ghost text-primary hover:bg-primary/5 rounded-xl font-bold flex items-center gap-1.5 mt-4 text-xs"
                   >
@@ -1163,7 +1159,7 @@ export default function ProfilePage() {
                     </div>
 
                     {/* Create Group Trigger Button */}
-                    <button 
+                    <button
                       onClick={() => {
                         const name = prompt(locale === 'ar' ? 'اسم مجموعة الدراسة:' : 'Enter Study Circle Name:');
                         if (name) {
@@ -1193,14 +1189,14 @@ export default function ProfilePage() {
                             </div>
 
                             {isMember ? (
-                              <button 
+                              <button
                                 onClick={() => setActiveGroup(group)}
                                 className="btn btn-sm btn-primary w-full rounded-xl font-bold cursor-pointer text-white"
                               >
                                 {locale === 'ar' ? 'دخول حلقة النقاش' : 'Enter Workspace Circle'}
                               </button>
                             ) : (
-                              <button 
+                              <button
                                 onClick={() => handleJoinGroup(group._id)}
                                 className="btn btn-sm btn-outline btn-primary w-full rounded-xl font-bold cursor-pointer"
                               >
@@ -1222,8 +1218,8 @@ export default function ProfilePage() {
                 <div className="space-y-6 animate-fadeIn">
                   <div className="flex items-center justify-between border-b border-base-200 pb-3">
                     <div className="flex items-center gap-3">
-                      <button 
-                        onClick={() => setActiveGroup(null)} 
+                      <button
+                        onClick={() => setActiveGroup(null)}
                         className="btn btn-xs btn-ghost font-bold rounded-lg border border-base-300 cursor-pointer"
                       >
                         {locale === 'ar' ? '← رجوع' : '← Back'}
@@ -1269,8 +1265,8 @@ export default function ProfilePage() {
 
                       {/* Input form */}
                       <form onSubmit={handleSendGroupChat} className="p-3 bg-base-300/30 border-t border-base-300 flex gap-2 shrink-0 animate-fadeIn">
-                        <input 
-                          type="text" 
+                        <input
+                          type="text"
                           placeholder={locale === 'ar' ? 'اكتب رسالتك هنا...' : 'Type cohort message...'}
                           value={groupChatMessage}
                           onChange={(e) => setGroupChatMessage(e.target.value)}
@@ -1348,7 +1344,7 @@ export default function ProfilePage() {
       {selectedCertificate && (
         <div className="modal modal-open bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center">
           <div className="modal-box max-w-4xl p-8 bg-base-100 rounded-[2.5rem] border border-base-300 relative shadow-2xl animate-scaleUp">
-            <button 
+            <button
               onClick={() => setSelectedCertificate(null)}
               className="btn btn-sm btn-circle btn-ghost absolute top-6 right-6 font-bold text-lg cursor-pointer"
             >
@@ -1380,7 +1376,7 @@ export default function ProfilePage() {
                 <h2 className="text-xs font-sans font-black tracking-widest text-amber-700 uppercase">
                   THE CODEFATHER ACADEMY
                 </h2>
-                
+
                 <h1 className="text-2xl md:text-4xl font-serif text-slate-900 italic font-medium leading-tight">
                   Certificate of Completion
                 </h1>
@@ -1422,13 +1418,13 @@ export default function ProfilePage() {
 
             {/* Actions */}
             <div className="flex gap-3 mt-6">
-              <button 
+              <button
                 onClick={() => window.print()}
                 className="btn btn-primary flex-1 rounded-xl font-bold text-white cursor-pointer"
               >
                 <Download className="w-4 h-4 text-white" /> {locale === 'ar' ? 'تحميل كملف PDF / طباعة' : 'Download Certificate PDF'}
               </button>
-              <button 
+              <button
                 onClick={() => setSelectedCertificate(null)}
                 className="btn btn-outline border-base-300 flex-1 rounded-xl font-bold cursor-pointer"
               >

@@ -2,10 +2,11 @@
 
 import { NextIntlClientProvider } from "next-intl";
 import { ThemeProvider } from "next-themes";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { AuthProvider } from "@/contexts/auth-context";
 import { NotificationsProvider } from "@/contexts/notifications-context";
+import { offlineSyncQueue } from "@/lib/offline-sync-queue";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 interface ProvidersProps {
@@ -28,6 +29,29 @@ export function Providers({ children, locale, messages }: ProvidersProps) {
         },
       }),
   );
+
+  useEffect(() => {
+    offlineSyncQueue.init();
+
+    const handleOnline = () => {
+      console.log("[OfflineSyncQueue] Network connection re-established. Initiating queue sync.");
+      offlineSyncQueue.processQueue();
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible" && navigator.onLine) {
+        offlineSyncQueue.processQueue();
+      }
+    };
+
+    window.addEventListener("online", handleOnline);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
 
   return (
     <ThemeProvider

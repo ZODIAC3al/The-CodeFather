@@ -19,6 +19,7 @@ async function bootstrap() {
         'https://codeefather.netlify.app',
         'https://the-code-father-iota.vercel.app',
         'https://thecodefather.vercel.app',
+        'https://the-code-father-v1.vercel.app',
         '',
       ].filter(Boolean) as string[];
       if (

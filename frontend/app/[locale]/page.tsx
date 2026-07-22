@@ -68,14 +68,14 @@ export default function Home() {
       <Navbar hideDownload={true} />
 
       {/* ── 1. HERO SECTION ── */}
-      <section className="relative pt-12 pb-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-[#E2F0EF]/45 via-base-100 to-base-100 rounded-b-[4rem]">
+      <section className="relative pt-12 pb-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-[#E2F0EF]/45 dark:from-base-300/40 via-base-100 to-base-100 rounded-b-[4rem]">
         {/* Background curved shape */}
-        <div className="absolute top-0 right-0 w-[50%] h-[80%] bg-[#E2F0EF]/40 rounded-bl-[15rem] -z-10 pointer-events-none" />
+        <div className="absolute top-0 right-0 w-[50%] h-[80%] bg-[#E2F0EF]/40 dark:bg-base-300/20 rounded-bl-[15rem] -z-10 pointer-events-none" />
 
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
           {/* Left Text Content */}
           <div className="flex-1 space-y-6 text-center lg:text-start">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-[#1E2A38] dark:text-white tracking-tight leading-[1.15]">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-base-content tracking-tight leading-[1.15]">
               {locale === "ar" ? (
                 <>
                   {t("heroTitle")}{" "}
@@ -102,7 +102,7 @@ export default function Home() {
               </Link>
               <Link
                 href={lp("/courses")}
-                className="flex items-center gap-3 font-extrabold text-[#1E2A38] dark:text-white hover:text-primary transition-colors py-2"
+                className="flex items-center gap-3 font-extrabold text-base-content hover:text-primary transition-colors py-2"
               >
                 <div className="w-10 h-10 rounded-full bg-white dark:bg-base-200 shadow-md flex items-center justify-center text-primary">
                   <Play className="w-4 h-4 fill-primary text-primary" />
@@ -183,7 +183,7 @@ export default function Home() {
       {/* ── 2. SUCCESS METRICS SECTION ── */}
       <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-12">
         <div className="space-y-3">
-          <h2 className="text-3xl font-extrabold text-[#1E2A38] dark:text-white">
+          <h2 className="text-3xl font-extrabold text-base-content">
             {t("successTitle")}
           </h2>
           <p className="text-sm text-base-content/60 max-w-md mx-auto font-medium">
@@ -215,7 +215,7 @@ export default function Home() {
       <section className="py-16 bg-base-200/40 border-y border-base-300/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
           <div className="text-center space-y-3 max-w-xl mx-auto">
-            <h2 className="text-3xl font-extrabold text-[#1E2A38] dark:text-white">
+            <h2 className="text-3xl font-extrabold text-base-content">
               {t("cloudTitle")}
             </h2>
             <p className="text-sm text-base-content/60 font-medium">
@@ -248,7 +248,7 @@ export default function Home() {
                 <div className="w-14 h-14 bg-base-200 rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
                   {card.icon}
                 </div>
-                <h3 className="text-lg font-extrabold text-[#1E2A38] dark:text-white mb-3 leading-snug">
+                <h3 className="text-lg font-extrabold text-base-content mb-3 leading-snug">
                   {card.title}
                 </h3>
                 <p className="text-sm text-base-content/70 font-medium leading-relaxed">
@@ -263,7 +263,7 @@ export default function Home() {
       {/* ── 4. WHAT IS CODEFATHER? SECTION ── */}
       <section className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
         <div className="text-center space-y-3 max-w-xl mx-auto">
-          <h2 className="text-3xl font-extrabold text-[#1E2A38] dark:text-white">
+          <h2 className="text-3xl font-extrabold text-base-content">
             {t("whatIsCodefather")}
           </h2>
           <p className="text-sm text-base-content/70 font-medium">
@@ -324,7 +324,7 @@ export default function Home() {
       <section className="py-20 bg-base-200/30">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-6">
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-[#1E2A38] dark:text-white leading-tight">
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-base-content leading-tight">
               {locale === "ar" ? (
                 <>{t("physicalVirtualTitle")}</>
               ) : (
@@ -363,7 +363,7 @@ export default function Home() {
       <section className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-2">
-            <h2 className="text-3xl font-extrabold text-[#1E2A38] dark:text-white">
+            <h2 className="text-3xl font-extrabold text-base-content">
               {t("choiceCourses")}
             </h2>
             <p className="text-sm text-base-content/60 font-semibold">
@@ -497,7 +497,7 @@ export default function Home() {
           {/* Testimonial Text & Info */}
           <div className="space-y-6 text-center lg:text-start pt-6 lg:pt-0">
             <div className="inline-block h-1 w-16 bg-primary mx-auto lg:mx-0"></div>
-            <h2 className="text-3xl font-extrabold text-[#1E2A38] dark:text-white leading-snug">
+            <h2 className="text-3xl font-extrabold text-base-content leading-snug">
               {t("testimonialsTitle")}
             </h2>
             <p className="text-base-content/70 font-medium leading-relaxed max-w-md mx-auto lg:mx-0">

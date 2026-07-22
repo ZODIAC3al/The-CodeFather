@@ -6,12 +6,27 @@ export const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// Request: attach JWT
+// Request: attach JWT & Idempotency headers for mutations
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
     const token = localStorage.getItem('access_token');
     if (token) config.headers.Authorization = `Bearer ${token}`;
   }
+
+  const method = config.method?.toUpperCase();
+  if (method && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+    if (!config.headers['Idempotency-Key']) {
+      const idempKey =
+        typeof crypto !== 'undefined' && crypto.randomUUID
+          ? crypto.randomUUID()
+          : 'idemp-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9);
+      config.headers['Idempotency-Key'] = idempKey;
+    }
+    if (!config.headers['x-client-mutation-id']) {
+      config.headers['x-client-mutation-id'] = config.headers['Idempotency-Key'];
+    }
+  }
+
   return config;
 });
 
